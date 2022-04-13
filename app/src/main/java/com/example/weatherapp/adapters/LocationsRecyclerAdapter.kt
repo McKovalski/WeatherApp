@@ -29,7 +29,8 @@ class LocationsRecyclerAdapter(
 
     override fun onBindViewHolder(holder: LocationViewHolder, position: Int) {
         val location = locationList[position]
-        holder.binding.name.text = location.title
+        holder.binding.cityName.text = location.title
+        holder.binding.coordinates.text = location.getCoordinates()
         holder.itemView.setOnClickListener {
             val intent = Intent(context, CityDetailActivity::class.java).apply {
                 putExtra(EXTRA_WOEID, location.woeid)

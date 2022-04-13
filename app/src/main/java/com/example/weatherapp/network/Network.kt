@@ -13,6 +13,7 @@ class Network {
 
     init {
         val interceptor = HttpLoggingInterceptor()
+        interceptor.level = HttpLoggingInterceptor.Level.BASIC
         val httpClient = OkHttpClient.Builder().addInterceptor(interceptor)
         val retrofit = Retrofit.Builder()
             .baseUrl(baseUrl)

@@ -4,12 +4,57 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:backgroundTint="@color/surface_surface_1"
     android:fitsSystemWindows="true"
     tools:context=".activities.CityDetailActivity">
 
-    <TextView
-        android:id="@+id/everything"
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/app_bar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="@dimen/app_bar_height"
+        android:backgroundTint="@color/surface_surface_1"
+        android:fitsSystemWindows="true"
+        android:theme="@style/Theme.WeatherApp.AppBarOverlay">
+
+        <com.google.android.material.appbar.CollapsingToolbarLayout
+            android:id="@+id/toolbar_layout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:backgroundTint="@color/surface_surface_1"
+            android:fitsSystemWindows="true"
+            app:collapsedTitleTextAppearance="@style/HeadlineMediumNLv1Left"
+            app:contentScrim="@color/surface_surface_1"
+            app:expandedTitleTextAppearance="@style/HeadlineLargeNLv1Left"
+            app:layout_scrollFlags="scroll|exitUntilCollapsed"
+            app:title=""
+            app:toolbarId="@+id/toolbar">
+
+            <androidx.appcompat.widget.Toolbar
+                android:id="@+id/toolbar"
+                android:layout_width="match_parent"
+                android:layout_height="?attr/actionBarSize"
+                app:layout_collapseMode="pin"
+                app:popupTheme="@style/Theme.WeatherApp.PopupOverlay">
+
+                <ImageView
+                    android:id="@+id/icon_favourite"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_gravity="end"
+                    android:layout_marginTop="20dp"
+                    android:layout_marginEnd="16dp"
+                    android:layout_marginBottom="20dp"
+                    android:src="@drawable/ic_star_0" />
+
+            </androidx.appcompat.widget.Toolbar>
+
+
+        </com.google.android.material.appbar.CollapsingToolbarLayout>
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <include
+        android:id="@+id/content_scrolling"
+        layout="@layout/content_scrolling" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

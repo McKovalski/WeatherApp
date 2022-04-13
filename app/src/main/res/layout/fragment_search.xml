@@ -16,18 +16,13 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <EditText
-            android:id="@+id/search_bar_edit_text"
+        <androidx.appcompat.widget.SearchView
+            android:id="@+id/search_bar"
             android:layout_width="match_parent"
             android:layout_height="48dp"
             android:layout_margin="8dp"
             android:background="@drawable/search_background"
-            android:drawableStart="@drawable/ic_search"
-            android:drawablePadding="24dp"
-            android:drawableTint="@color/neutrals_n_lv_2"
-            android:hint="@string/search_cities"
-            android:textColor="@color/neutrals_n_lv_1"
-            android:textColorHint="@color/neutrals_n_lv_2" />
+            app:queryHint="@string/search_cities" />
 
     </androidx.appcompat.widget.Toolbar>
 
@@ -35,6 +30,6 @@
         android:id="@+id/recycler_view"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        app:layout_constraintTop_toBottomOf="@id/toolbar"/>
+        app:layout_constraintTop_toBottomOf="@id/toolbar" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

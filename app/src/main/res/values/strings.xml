@@ -5,4 +5,12 @@
     <string name="my_cities">My Cities</string>
     <string name="retry">Retry</string>
     <string name="search_cities">Search Cities</string>
+    <string name="today">Today</string>
+    <string name="temperature">TEMPERATURE</string>
+    <string name="wind">WIND</string>
+    <string name="humidity">HUMIDITY</string>
+    <string name="pressure">PRESSURE</string>
+    <string name="visibility">VISIBILITY</string>
+    <string name="accuracy">ACCURACY</string>
+    <string name="next_days">Next Days</string>
 </resources>
