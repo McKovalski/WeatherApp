@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">Weather App</string>
+    <string name="title_activity_main">MainActivity</string>
+    <string name="search">Search</string>
+    <string name="my_cities">My Cities</string>
+    <string name="retry">Retry</string>
+    <string name="search_cities">Search Cities</string>
 </resources>
