@@ -11,10 +11,11 @@ import com.example.weatherapp.helpers.ImageLoader
 import com.example.weatherapp.network.model.Weather
 import kotlin.math.roundToInt
 
-class TodayWeatherRecyclerAdapter(
+class WeatherRecyclerAdapter(
     private val context: Context,
-    private val weatherList: List<Weather>
-) : RecyclerView.Adapter<TodayWeatherRecyclerAdapter.WeatherViewHolder>() {
+    private val weatherList: List<Weather>,
+    private val isToday: Boolean
+) : RecyclerView.Adapter<WeatherRecyclerAdapter.WeatherViewHolder>() {
 
     class WeatherViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val binding = DailyTimeItemBinding.bind(view)
@@ -28,7 +29,7 @@ class TodayWeatherRecyclerAdapter(
     override fun onBindViewHolder(holder: WeatherViewHolder, position: Int) {
         val weather = weatherList[position]
 
-        holder.binding.timeOrDay.text = weather.getTimeCreated()
+        holder.binding.timeOrDay.text = if (isToday) weather.getTimeCreated() else weather.getDayInWeek()
         holder.binding.temperature.text = weather.the_temp.roundToInt().toString().plus("°")
         val imageResource = ImageLoader(weather.weather_state_name).getImageId()
         holder.binding.iconWeather.setImageResource(imageResource)

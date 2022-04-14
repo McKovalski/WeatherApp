@@ -9,8 +9,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.weatherapp.R
-import com.example.weatherapp.adapters.NextDaysWeatherRecyclerAdapter
-import com.example.weatherapp.adapters.TodayWeatherRecyclerAdapter
+import com.example.weatherapp.adapters.WeatherRecyclerAdapter
 import com.example.weatherapp.databinding.ActivityCityDetailBinding
 import com.example.weatherapp.helpers.ImageLoader
 import com.example.weatherapp.network.model.LocationDetails
@@ -41,23 +40,25 @@ class CityDetailActivity : AppCompatActivity() {
 
                 setViews(locationDetails)
 
-                val nextDaysWeatherRecyclerAdapter =
-                    NextDaysWeatherRecyclerAdapter(this, locationDetails.consolidated_weather)
+                // buduca prognoza
+                var weatherRecyclerAdapter =
+                    WeatherRecyclerAdapter(this, locationDetails.consolidated_weather, false)
                 binding.contentScrolling.nextDaysWeatherSequence.recyclerView.adapter =
-                    nextDaysWeatherRecyclerAdapter
+                    weatherRecyclerAdapter
                 binding.contentScrolling.nextDaysWeatherSequence.recyclerView.layoutManager =
                     LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
                 binding.contentScrolling.nextDaysWeatherSequence.today.text = getString(R.string.next_days)
 
+                // danasnja prognoza
                 val currentDate =
                     locationDetails.consolidated_weather[0].applicable_date.replace("-", "/")
                 mainViewModel.getDailyForecast(woeid, currentDate)
                 mainViewModel.dailyForecast.observe(this, Observer { res ->
                     val weatherList = res.body()!!.subList(0, 8)
                     weatherList.sortBy { it.created }
-                    val todayWeatherRecyclerAdapter = TodayWeatherRecyclerAdapter(this, weatherList)
+                    weatherRecyclerAdapter = WeatherRecyclerAdapter(this, weatherList, true)
                     binding.contentScrolling.todayWeatherSequence.recyclerView.adapter =
-                        todayWeatherRecyclerAdapter
+                        weatherRecyclerAdapter
                     binding.contentScrolling.todayWeatherSequence.recyclerView.layoutManager =
                         LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
                     binding.contentScrolling.todayWeatherSequence.today.text = getString(R.string.today)
