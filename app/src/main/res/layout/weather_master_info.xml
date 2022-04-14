@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:backgroundTint="@color/surface_surface_1">
+
+    <include
+        android:id="@+id/base_city_info"
+        layout="@layout/base_city_info"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <View
+        android:id="@+id/bottom_divider"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:background="@color/neutrals_n_lv_3"
+        app:layout_constraintTop_toBottomOf="@id/base_city_info" />
+
+    <include
+        android:id="@+id/temperature_tile"
+        layout="@layout/weather_info_tile"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        app:layout_constraintEnd_toStartOf="@id/wind_tile"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/bottom_divider" />
+
+    <include
+        android:id="@+id/wind_tile"
+        layout="@layout/weather_info_tile"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        app:layout_constraintEnd_toStartOf="@id/humidity_tile"
+        app:layout_constraintStart_toEndOf="@id/temperature_tile"
+        app:layout_constraintTop_toBottomOf="@id/bottom_divider" />
+
+    <include
+        android:id="@+id/humidity_tile"
+        layout="@layout/weather_info_tile"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/wind_tile"
+        app:layout_constraintTop_toBottomOf="@id/bottom_divider" />
+
+    <include
+        android:id="@+id/pressure_tile"
+        layout="@layout/weather_info_tile"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        app:layout_constraintEnd_toStartOf="@id/visibility_tile"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/temperature_tile" />
+
+    <include
+        android:id="@+id/visibility_tile"
+        layout="@layout/weather_info_tile"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        app:layout_constraintEnd_toStartOf="@id/accuracy_tile"
+        app:layout_constraintStart_toEndOf="@id/pressure_tile"
+        app:layout_constraintTop_toBottomOf="@id/wind_tile" />
+
+    <include
+        android:id="@+id/accuracy_tile"
+        layout="@layout/weather_info_tile"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/visibility_tile"
+        app:layout_constraintTop_toBottomOf="@id/humidity_tile" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
