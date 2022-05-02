@@ -13,4 +13,5 @@
     <string name="visibility">VISIBILITY</string>
     <string name="accuracy">ACCURACY</string>
     <string name="next_days">Next Days</string>
+    <string name="recent">Recent</string>
 </resources>
