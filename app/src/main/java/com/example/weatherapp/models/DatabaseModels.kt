@@ -19,7 +19,8 @@ data class Favourite(
     val woeid: Int,
     val title: String,
     val location_type: String,
-    override val latt_long: String
+    override val latt_long: String,
+    val position: Int
 ) : Location
 
 @Entity

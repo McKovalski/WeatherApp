@@ -24,7 +24,7 @@ private const val EXTRA_IS_FAVOURITE: String = "is_favourite"
 
 class FavouritesRecyclerAdapter(
     private val context: Context,
-    private val favouritesList: ArrayList<LocationData>,
+    private val favouritesList: ArrayList<Favourite>,
     private val detailsList: List<LocationDetails>,
     private val fragment: MyCitiesFragment
 ) : RecyclerView.Adapter<FavouritesRecyclerAdapter.FavouriteViewHolder>() {
@@ -58,14 +58,7 @@ class FavouritesRecyclerAdapter(
         holder.binding.favouriteCard.favouriteIcon.tag = "isFavourite"
 
         holder.binding.favouriteCard.favouriteIcon.setOnClickListener {
-            fragment.removeFromFavourites(
-                Favourite(
-                    location.woeid,
-                    location.title,
-                    location.location_type,
-                    location.latt_long
-                )
-            )
+            fragment.removeFromFavourites(location)
             holder.binding.favouriteCard.favouriteIcon.tag = "isNotFavourite"
             favouritesList.removeAt(position)
             notifyItemRemoved(position)
@@ -93,7 +86,14 @@ class FavouritesRecyclerAdapter(
                 )
             )
             val intent = Intent(context, CityDetailActivity::class.java).apply {
-                putExtra(EXTRA_LOCATION, location)
+                putExtra(
+                    EXTRA_LOCATION, LocationData(
+                        location.title,
+                        location.location_type,
+                        location.woeid,
+                        location.latt_long
+                    )
+                )
                 // za extra favorita stavljamo true jer je to ovdje jedina opcija
                 putExtra(EXTRA_IS_FAVOURITE, true)
             }
@@ -105,8 +105,16 @@ class FavouritesRecyclerAdapter(
         return favouritesList.size
     }
 
-    fun swapItems(firstPosition: Int, secondPosition: Int, viewHolder: RecyclerView.ViewHolder) {
-        Collections.swap(favouritesList, firstPosition, secondPosition)
-        notifyItemMoved(firstPosition, secondPosition)
+    fun swapItems(fromPosition: Int, toPosition: Int) {
+        if (fromPosition < toPosition) {
+            for (i in fromPosition..toPosition) {
+                Collections.swap(favouritesList, i, i + 1)
+            }
+        } else {
+            for (i in toPosition..fromPosition) {
+                Collections.swap(favouritesList, i, i + 1)
+            }
+        }
+        notifyItemMoved(fromPosition, toPosition)
     }
 }

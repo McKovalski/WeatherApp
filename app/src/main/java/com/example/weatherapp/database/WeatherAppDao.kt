@@ -19,8 +19,11 @@ interface WeatherAppDao {
     suspend fun deleteAlLRecent()
 
 
-    @Query("SELECT * FROM Favourite")
-    suspend fun getAllFavourites(): List<LocationData>
+    @Query("SELECT * FROM Favourite ORDER BY position")
+    suspend fun getAllFavourites(): List<Favourite>
+
+    @Query("SELECT * FROM Favourite WHERE woeid = :woeid")
+    suspend fun getFavouriteById(woeid: Int): Favourite
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertFavourite(favourite: Favourite)
@@ -33,6 +36,9 @@ interface WeatherAppDao {
 
     @Query("DELETE FROM Favourite")
     suspend fun deleteAllFavourites()
+
+    @Query("SELECT MAX(position) FROM Favourite")
+    suspend fun getLastFavouritePosition(): Int
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun setCurrentLocation(currentLocation: CurrentLocation)

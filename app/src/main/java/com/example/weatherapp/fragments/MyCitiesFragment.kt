@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -19,7 +20,6 @@ import com.example.weatherapp.adapters.FavouritesRecyclerAdapter
 import com.example.weatherapp.databinding.FragmentMyCitiesBinding
 import com.example.weatherapp.models.Favourite
 import com.example.weatherapp.models.Recent
-import com.example.weatherapp.network.model.LocationData
 import com.example.weatherapp.network.model.LocationDetails
 import com.example.weatherapp.viewmodels.MainViewModel
 import java.util.*
@@ -34,7 +34,7 @@ class MyCitiesFragment : Fragment() {
     // onDestroyView.
     private val binding get() = _binding!!
 
-    var favourites = ArrayList<LocationData>()
+    var favourites = ArrayList<Favourite>()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -75,6 +75,18 @@ class MyCitiesFragment : Fragment() {
                 } else {
                     isEditing = false
                     binding.iconEdit.setImageResource(R.drawable.ic_edit)
+                    // mijenjamo podatke u bazi
+                    val favouritesDb = ArrayList<Favourite>()
+                    favourites.forEachIndexed { index, element ->
+                        favouritesDb.add(Favourite(
+                            element.woeid,
+                            element.title,
+                            element.location_type,
+                            element.latt_long,
+                            index + 1
+                        ))
+                    }
+                    mainViewModel.addAllFavourites(requireContext(), favouritesDb)
                 }
                 // postavimo item touch helper
                 val itemTouchHelper = ItemTouchHelper(itemTouchHelperCallback)
@@ -127,15 +139,27 @@ class MyCitiesFragment : Fragment() {
             viewHolder: RecyclerView.ViewHolder,
             target: RecyclerView.ViewHolder
         ): Boolean {
-            Collections.swap(favourites, viewHolder.adapterPosition, target.adapterPosition)
+            val fromPosition = viewHolder.adapterPosition
+            val toPosition = target.adapterPosition
+            Log.d("FROM POSITION:", fromPosition.toString())
+            Log.d("TO POSITION:", toPosition.toString())
+            if (fromPosition < toPosition) {
+                for (i in fromPosition until toPosition) {
+                    Collections.swap(favourites, i, i+1)
+                }
+            } else {
+                for (i in toPosition until fromPosition) {
+                    Collections.swap(favourites, i, i+1)
+                }
+            }
+
             binding.favoritesRecyclerView.adapter?.notifyItemMoved(
                 viewHolder.adapterPosition,
                 target.adapterPosition
             )
             /*(binding.favoritesRecyclerView.adapter as FavouritesRecyclerAdapter).swapItems(
                 viewHolder.adapterPosition,
-                target.adapterPosition,
-                viewHolder
+                target.adapterPosition
             )*/
             return true
         }

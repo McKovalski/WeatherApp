@@ -18,7 +18,7 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
 import retrofit2.Response
 
-class MainViewModel: ViewModel() {
+class MainViewModel : ViewModel() {
 
     // lista gradova koju dobijemo iz query-a
     private val _searchLocationsList = MutableLiveData<Response<ArrayList<LocationData>>>()
@@ -45,7 +45,7 @@ class MainViewModel: ViewModel() {
     val recentLocationDetails = MutableLiveData<List<LocationDetails>>()
 
     // lista favorita
-    val favoriteLocations = MutableLiveData<ArrayList<LocationData>>()
+    val favoriteLocations = MutableLiveData<ArrayList<Favourite>>()
     val favoriteLocationDetails = MutableLiveData<List<LocationDetails>>()
 
     // trenutna lokacija
@@ -54,11 +54,16 @@ class MainViewModel: ViewModel() {
     // tekst query-a pri izlasku iz search fragmenta
     var queryText: String? = null
 
+    // zadnja pozicija favorita
+    val favouritesLastPosition = MutableLiveData<Int>()
+
 
     fun getLocationList(query: String) {
         viewModelScope.launch {
             val searchResponse = Network().getService().getLocationsByQuery(query)
-            val searchDetails = searchResponse.body()?.map { location -> Network().getService().getLocationById(location.woeid).body()!! } //TODO provjera ovog
+            val searchDetails = searchResponse.body()?.map { location ->
+                Network().getService().getLocationById(location.woeid).body()!!
+            } //TODO provjera ovog
             _searchLocationsList.value = searchResponse
             _searchLocationsDetailsList.value = searchDetails!!
         }
@@ -78,8 +83,13 @@ class MainViewModel: ViewModel() {
 
     fun getRecent(context: Context) {
         viewModelScope.launch {
-            val recent = WeatherAppDatabase.getDatabase(context)?.weatherAppDao()?.getLastTenRecent()
-            val recentDetailsResponse = recent?.map { r -> async { Network().getService().getLocationById(r.woeid).body()!! }  }
+            val recent =
+                WeatherAppDatabase.getDatabase(context)?.weatherAppDao()?.getLastTenRecent()
+            val recentDetailsResponse = recent?.map { r ->
+                async {
+                    Network().getService().getLocationById(r.woeid).body()!!
+                }
+            }
             recentLocations.value = recent!!
             recentLocationDetails.value = recentDetailsResponse?.awaitAll()
         }
@@ -94,9 +104,14 @@ class MainViewModel: ViewModel() {
 
     fun getFavourites(context: Context) {
         viewModelScope.launch {
-            val favorites = WeatherAppDatabase.getDatabase(context)?.weatherAppDao()?.getAllFavourites()
-            val favoritesDetailsResponse = favorites?.map { f -> async { Network().getService().getLocationById(f.woeid).body()!! } }
-            favoriteLocations.value = favorites as ArrayList<LocationData>
+            val favorites =
+                WeatherAppDatabase.getDatabase(context)?.weatherAppDao()?.getAllFavourites()
+            val favoritesDetailsResponse = favorites?.map { f ->
+                async {
+                    Network().getService().getLocationById(f.woeid).body()!!
+                }
+            }
+            favoriteLocations.value = favorites as ArrayList<Favourite>?
             favoriteLocationDetails.value = favoritesDetailsResponse?.awaitAll()
         }
     }
@@ -108,6 +123,14 @@ class MainViewModel: ViewModel() {
         }
     }
 
+    fun addAllFavourites(context: Context, favourites: List<Favourite>) {
+        viewModelScope.launch {
+            WeatherAppDatabase.getDatabase(context)?.weatherAppDao()
+                ?.insertAllFavourites(favourites)
+            getFavourites(context)
+        }
+    }
+
     fun removeFavourite(context: Context, favourite: Favourite) {
         viewModelScope.launch {
             WeatherAppDatabase.getDatabase(context)?.weatherAppDao()?.deleteFavourite(favourite)
@@ -115,9 +138,25 @@ class MainViewModel: ViewModel() {
         }
     }
 
+    fun getFavouriteById(context: Context, woeid: Int): Favourite? {
+        var favourite: Favourite? = null
+        viewModelScope.launch {
+           favourite = WeatherAppDatabase.getDatabase(context)?.weatherAppDao()?.getFavouriteById(woeid)
+        }
+        return favourite
+    }
+
+    fun getLastFavouritePosition(context: Context) {
+        viewModelScope.launch {
+            favouritesLastPosition.value =
+                WeatherAppDatabase.getDatabase(context)?.weatherAppDao()?.getLastFavouritePosition()
+        }
+    }
+
     fun getCurrentLocation(context: Context) {
         viewModelScope.launch {
-            currentLocation.value = WeatherAppDatabase.getDatabase(context)?.weatherAppDao()?.getCurrentLocation()
+            currentLocation.value =
+                WeatherAppDatabase.getDatabase(context)?.weatherAppDao()?.getCurrentLocation()
         }
     }
 

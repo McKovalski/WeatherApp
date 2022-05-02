@@ -158,18 +158,24 @@ class CityDetailActivity : AppCompatActivity() {
             binding.iconFavourite.setImageResource(R.drawable.ic_icons_android_ic_star_0)
         }
         binding.iconFavourite.setOnClickListener {
-            val favourite = Favourite(
-                location.woeid,
-                location.title,
-                location.location_type,
-                location.latt_long
-            )
             if (isFavourite) {
                 isFavourite = false
-                mainViewModel.addFavourite(this, favourite)
+                binding.iconFavourite.setImageResource(R.drawable.ic_icons_android_ic_star_0)
+                val favourite = mainViewModel.getFavouriteById(this, location.woeid)
+                mainViewModel.removeFavourite(this, favourite!!)
             } else {
                 isFavourite = true
-                mainViewModel.removeFavourite(this, favourite)
+                binding.iconFavourite.setImageResource(R.drawable.ic_icons_android_ic_star_1)
+                mainViewModel.getLastFavouritePosition(this)
+                val newPosition: Int = mainViewModel.favouritesLastPosition.value?.plus(1) ?: 0
+                val favourite = Favourite(
+                    location.woeid,
+                    location.title,
+                    location.location_type,
+                    location.latt_long,
+                    newPosition
+                )
+                mainViewModel.addFavourite(this, favourite)
             }
         }
     }

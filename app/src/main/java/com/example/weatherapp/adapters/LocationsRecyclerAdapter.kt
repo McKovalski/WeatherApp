@@ -2,6 +2,7 @@ package com.example.weatherapp.adapters
 
 import android.content.Context
 import android.content.Intent
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -25,7 +26,7 @@ class LocationsRecyclerAdapter(
     private val context: Context,
     private val locationList: List<LocationData>,
     private val detailsList: List<LocationDetails>,
-    private val favorites: ArrayList<LocationData>,
+    private val favorites: ArrayList<Favourite>,
     private val fragment: SearchFragment,
     private val currentLocation: CurrentLocation? = null
 ) : RecyclerView.Adapter<LocationsRecyclerAdapter.LocationViewHolder>() {
@@ -61,7 +62,7 @@ class LocationsRecyclerAdapter(
             )
         }
 
-        if (location in favorites) {
+        if (location.woeid in favorites.map { favourite -> favourite.woeid }) {
             holder.binding.favouriteIcon.setImageResource(R.drawable.ic_icons_android_ic_star_1)
             holder.binding.favouriteIcon.tag = "isFavourite"
             isFavourite = true
@@ -76,24 +77,29 @@ class LocationsRecyclerAdapter(
                 holder.binding.favouriteIcon.tag = "isFavourite"
                 isFavourite = true
                 holder.binding.favouriteIcon.setImageResource(R.drawable.ic_icons_android_ic_star_1)
-                fragment.addToFavourites(Favourite(
+                Log.d("Last Favourite Position", fragment.getLastFavouritePosition().toString())
+                val newPosition: Int = fragment.getLastFavouritePosition() + 1
+                val favourite = Favourite(
                     location.woeid,
                     location.title,
                     location.location_type,
-                    location.latt_long
-                ))
-                favorites.add(location) // TODO provjera
+                    location.latt_long,
+                    newPosition
+                )
+                fragment.addToFavourites(favourite)
+                favorites.add(favourite)
             } else {
                 holder.binding.favouriteIcon.tag = "isNotFavourite"
                 isFavourite = false
                 holder.binding.favouriteIcon.setImageResource(R.drawable.ic_icons_android_ic_star_0)
-                fragment.removeFromFavourites(Favourite(
-                    location.woeid,
-                    location.title,
-                    location.location_type,
-                    location.latt_long
-                ))
-                favorites.remove(location) // TODO provjera
+                var favourite: Favourite? = null
+                favorites.forEach {
+                    if (it.woeid == location.woeid) {
+                        favourite = it
+                    }
+                }
+                fragment.removeFromFavourites(favourite!!)
+                favorites.remove(favourite)
             }
             notifyDataSetChanged()
         }

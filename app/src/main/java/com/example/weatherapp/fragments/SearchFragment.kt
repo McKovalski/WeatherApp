@@ -18,7 +18,6 @@ import com.example.weatherapp.adapters.LocationsRecyclerAdapter
 import com.example.weatherapp.databinding.FragmentSearchBinding
 import com.example.weatherapp.models.Favourite
 import com.example.weatherapp.models.Recent
-import com.example.weatherapp.network.model.LocationData
 import com.example.weatherapp.viewmodels.MainViewModel
 import kotlin.system.exitProcess
 
@@ -67,10 +66,10 @@ class SearchFragment : Fragment() {
             }
         })
 
-        val favorites = ArrayList<LocationData>()
+        var favorites = ArrayList<Favourite>()
         mainViewModel.getFavourites(requireContext())
         mainViewModel.favoriteLocations.observe(viewLifecycleOwner, Observer {
-            favorites.addAll(it)
+            favorites = mainViewModel.favoriteLocations.value!!
         })
 
         // Postavimo Recent
@@ -151,6 +150,11 @@ class SearchFragment : Fragment() {
 
     fun addToRecent(recent: Recent) {
         mainViewModel.addRecent(requireContext(), recent)
+    }
+
+    fun getLastFavouritePosition(): Int {
+        mainViewModel.getLastFavouritePosition(requireContext())
+        return mainViewModel.favouritesLastPosition.value ?: 0
     }
 
     private fun setRecentVisibility(isVisible: Boolean) {
