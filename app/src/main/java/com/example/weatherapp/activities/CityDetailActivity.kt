@@ -12,16 +12,22 @@ import com.example.weatherapp.R
 import com.example.weatherapp.adapters.WeatherRecyclerAdapter
 import com.example.weatherapp.databinding.ActivityCityDetailBinding
 import com.example.weatherapp.helpers.ImageLoader
+import com.example.weatherapp.models.Favourite
+import com.example.weatherapp.network.model.LocationData
 import com.example.weatherapp.network.model.LocationDetails
 import com.example.weatherapp.viewmodels.MainViewModel
 import kotlin.math.roundToInt
 
-private const val EXTRA_WOEID: String = "woeid"
+private const val EXTRA_LOCATION: String = "location"
+private const val EXTRA_IS_FAVOURITE: String = "is_favourite"
 
 class CityDetailActivity : AppCompatActivity() {
 
     private val mainViewModel: MainViewModel by viewModels()
     private lateinit var binding: ActivityCityDetailBinding
+
+    private var isFavourite: Boolean = false
+    private lateinit var location: LocationData
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,8 +38,9 @@ class CityDetailActivity : AppCompatActivity() {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setHomeAsUpIndicator(R.drawable.ic_icons_android_ic_arrow_back)
 
-        val woeid: Int = intent.extras?.getInt(EXTRA_WOEID) as Int
-        mainViewModel.getLocationDetails(woeid)
+        location = intent.extras?.getSerializable(EXTRA_LOCATION) as LocationData
+        isFavourite = intent.extras?.getBoolean(EXTRA_IS_FAVOURITE) as Boolean
+        mainViewModel.getLocationDetails(location.woeid)
         mainViewModel.locationDetails.observe(this, Observer { it ->
             if (it.isSuccessful) {
                 val locationDetails = it.body()!!
@@ -52,7 +59,7 @@ class CityDetailActivity : AppCompatActivity() {
                 // danasnja prognoza
                 val currentDate =
                     locationDetails.consolidated_weather[0].applicable_date.replace("-", "/")
-                mainViewModel.getDailyForecast(woeid, currentDate)
+                mainViewModel.getDailyForecast(location.woeid, currentDate)
                 mainViewModel.dailyForecast.observe(this, Observer { res ->
                     val weatherList = res.body()!!.subList(0, 8)
                     weatherList.sortBy { it.created }
@@ -127,13 +134,13 @@ class CityDetailActivity : AppCompatActivity() {
         binding.contentScrolling.masterInfoView.accuracyTile.value.text = "$accuracy%"
 
 
-        // basic info
+        // osnovni info
         binding.toolbarLayout.title = locationDetails.title
         binding.toolbar.title = locationDetails.title
         binding.contentScrolling.masterInfoView.baseCityInfo.date.text =
             locationDetails.consolidated_weather[0].getFormattedDate()
         binding.contentScrolling.masterInfoView.baseCityInfo.time.text =
-            locationDetails.getFormattedTime()
+            locationDetails.getFormattedTimeAndTimezone()
         binding.contentScrolling.masterInfoView.baseCityInfo.forecastInfo.text =
             locationDetails.consolidated_weather[0].weather_state_name
         binding.contentScrolling.masterInfoView.baseCityInfo.temperature.text =
@@ -143,5 +150,33 @@ class CityDetailActivity : AppCompatActivity() {
         binding.contentScrolling.masterInfoView.baseCityInfo.forecastIcon.setImageResource(
             imageResource
         )
+
+        // favoriti
+        if (isFavourite) {
+            binding.iconFavourite.setImageResource(R.drawable.ic_icons_android_ic_star_1)
+        } else {
+            binding.iconFavourite.setImageResource(R.drawable.ic_icons_android_ic_star_0)
+        }
+        binding.iconFavourite.setOnClickListener {
+            if (isFavourite) {
+                isFavourite = false
+                binding.iconFavourite.setImageResource(R.drawable.ic_icons_android_ic_star_0)
+                val favourite = mainViewModel.getFavouriteById(this, location.woeid)
+                mainViewModel.removeFavourite(this, favourite!!)
+            } else {
+                isFavourite = true
+                binding.iconFavourite.setImageResource(R.drawable.ic_icons_android_ic_star_1)
+                mainViewModel.getLastFavouritePosition(this)
+                val newPosition: Int = mainViewModel.favouritesLastPosition.value?.plus(1) ?: 0
+                val favourite = Favourite(
+                    location.woeid,
+                    location.title,
+                    location.location_type,
+                    location.latt_long,
+                    newPosition
+                )
+                mainViewModel.addFavourite(this, favourite)
+            }
+        }
     }
 }

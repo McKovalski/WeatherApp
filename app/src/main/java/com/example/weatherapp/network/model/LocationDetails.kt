@@ -13,25 +13,42 @@ data class LocationDetails(
     val timezone_name: String,
     val timezone: String
 ) {
+    fun getFormattedTimeAndTimezone(): String {
+        val dateAndTime = time.split(".")[0] // 2022-04-13T20:15:34
+        val t = dateAndTime.split("T")[1] // 20:15:34
+        val timeElements = t.split(":")
+        val hours = timeElements[0]
+        val minutes = timeElements[1]
+        val afterNoonTag: String = if (hours.toInt() >= 12) {
+            "PM"
+        } else {
+            "AM"
+        }
+        return "$hours:$minutes $afterNoonTag ($timezone_name)"
+    }
+
     fun getFormattedTime(): String {
         val dateAndTime = time.split(".")[0] // 2022-04-13T20:15:34
         val t = dateAndTime.split("T")[1] // 20:15:34
         val timeElements = t.split(":")
-        var hours = timeElements[0]
+        val hours = timeElements[0]
         val minutes = timeElements[1]
-        val afterNoonTag: String
-        if (hours.toInt() >= 12) {
-            afterNoonTag = "PM"
-            // ako je broj sati manji od 22, moramo dodati 0 na pocetak stringa
-            hours = if (hours.toInt() < 22) {
-                "0" + (hours.toInt() - 12).toString()
-            } else {
-                (hours.toInt() - 12).toString()
-            }
+        val afterNoonTag: String = if (hours.toInt() >= 12) {
+            "PM"
         } else {
-            afterNoonTag = "AM"
+            "AM"
         }
-        return "$hours:$minutes $afterNoonTag ($timezone_name)"
+        return "$hours:$minutes $afterNoonTag"
+    }
+
+    fun getGMT(): String {
+        val ending = time.takeLast(6).split(":")[0] // +01
+        val prefix = ending.take(1) // +
+        return if (ending.removeRange(0, 1).toInt() < 10) {
+            "GMT$prefix${ending.removeRange(0,2)}"
+        } else {
+            "GMT$ending"
+        }
     }
 }
 

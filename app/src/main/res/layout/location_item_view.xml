@@ -26,7 +26,7 @@
             tools:text="Zagreb" />
 
         <TextView
-            android:id="@+id/coordinates"
+            android:id="@+id/first_detail"
             style="@style/BodyMediumNLv1Left"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -38,7 +38,7 @@
             tools:text="37°47′N, 122°25′W" />
 
         <TextView
-            android:id="@+id/distance"
+            android:id="@+id/second_detail"
             style="@style/BodyMediumNLv1Left"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -47,7 +47,7 @@
             android:textColor="@color/neutrals_n_lv_2"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/coordinates"
+            app:layout_constraintTop_toBottomOf="@id/first_detail"
             tools:text="Distance: 8542 km" />
 
         <ImageView
@@ -58,7 +58,8 @@
             android:layout_marginEnd="16dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            tools:src="@drawable/ic_star_border" />
+            app:tint="@color/color_secondary"
+            tools:src="@drawable/ic_icons_android_ic_star_0" />
 
         <ImageView
             android:id="@+id/weather_icon"

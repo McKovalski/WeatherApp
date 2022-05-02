@@ -16,6 +16,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.weatherapp.R
 import com.example.weatherapp.adapters.LocationsRecyclerAdapter
 import com.example.weatherapp.databinding.FragmentSearchBinding
+import com.example.weatherapp.models.Favourite
+import com.example.weatherapp.models.Recent
 import com.example.weatherapp.viewmodels.MainViewModel
 import kotlin.system.exitProcess
 
@@ -27,7 +29,9 @@ class SearchFragment : Fragment() {
     // onDestroyView.
     private val binding get() = _binding!!
 
-    private lateinit var adapter: LocationsRecyclerAdapter
+    private lateinit var searchAdapter: LocationsRecyclerAdapter
+    private lateinit var recentAdapter: LocationsRecyclerAdapter
+
     override fun onCreate(savedInstanceState: Bundle?) {
         setHasOptionsMenu(true)
         super.onCreate(savedInstanceState)
@@ -38,29 +42,67 @@ class SearchFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         _binding = FragmentSearchBinding.inflate(inflater, container, false)
-        binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
-        binding.recyclerView.visibility = View.INVISIBLE
+        binding.searchRecyclerView.layoutManager = LinearLayoutManager(requireContext())
+        setRecentVisibility(true)
 
         binding.searchBar.setOnQueryTextListener(object: SearchView.OnQueryTextListener {
-            override fun onQueryTextSubmit(p0: String?): Boolean {
-                return false
-            }
-
-            override fun onQueryTextChange(query: String?): Boolean {
+            override fun onQueryTextSubmit(query: String?): Boolean {
                 if (!query.isNullOrEmpty()) {
-                    binding.recyclerView.visibility = View.VISIBLE
+                    mainViewModel.queryText = query
                     mainViewModel.getLocationList(query.toString())
                 } else {
-                    binding.recyclerView.visibility = View.INVISIBLE
+                    mainViewModel.queryText = null
+                    setRecentVisibility(true)
                 }
                 return true
             }
+
+            override fun onQueryTextChange(query: String?): Boolean {
+                if (query.isNullOrEmpty()) {
+                    mainViewModel.queryText = null
+                    setRecentVisibility(true)
+                }
+                return false
+            }
         })
 
-        mainViewModel.locationsList.observe(viewLifecycleOwner, Observer {
-            if (it.isSuccessful) {
-                adapter = LocationsRecyclerAdapter(requireContext(), it.body()!!)
-                binding.recyclerView.adapter = adapter
+        var favorites = ArrayList<Favourite>()
+        mainViewModel.getFavourites(requireContext())
+        mainViewModel.favoriteLocations.observe(viewLifecycleOwner, Observer {
+            favorites = mainViewModel.favoriteLocations.value!!
+        })
+
+        // Postavimo Recent
+        mainViewModel.getRecent(requireContext())
+        mainViewModel.recentLocations.observe(viewLifecycleOwner, Observer { recentData ->
+            mainViewModel.recentLocationDetails.observe(viewLifecycleOwner, Observer { recentDetails ->
+                recentAdapter = LocationsRecyclerAdapter(
+                    requireContext(),
+                    recentData,
+                    recentDetails,
+                    favorites,
+                    this
+                )
+                binding.recentRecyclerView.adapter = recentAdapter
+                binding.recentRecyclerView.layoutManager = LinearLayoutManager(requireContext())
+            })
+        })
+
+        mainViewModel.searchLocationsList.observe(viewLifecycleOwner, Observer { searchResponse ->
+            if (searchResponse.isSuccessful) {
+                setRecentVisibility(false)
+
+                mainViewModel.searchLocationsDetailsList.observe(viewLifecycleOwner, Observer {
+                    searchAdapter = LocationsRecyclerAdapter(
+                        requireContext(),
+                        searchResponse.body()!!,
+                        it,
+                        favorites,
+                        this
+                    )
+                    binding.searchRecyclerView.adapter = searchAdapter
+                    binding.searchRecyclerView.layoutManager = LinearLayoutManager(requireContext())
+                })
             } else {
                 AlertDialog.Builder(requireContext()).setTitle("Error")
                     .setMessage("Something went wrong")
@@ -68,7 +110,6 @@ class SearchFragment : Fragment() {
                     .setIcon(R.drawable.ic_warning)
                     .show()
             }
-
         })
 
         return binding.root
@@ -84,6 +125,9 @@ class SearchFragment : Fragment() {
                 }
                 .setIcon(R.drawable.ic_warning).show()
         }
+        // vracamo query koji je bio prije izlaska iz fragmenta
+        binding.searchBar.setQuery(mainViewModel.queryText, false)
+        binding.searchBar.clearFocus()
         super.onResume()
     }
 
@@ -94,5 +138,34 @@ class SearchFragment : Fragment() {
         val networkCapabilities = connectivityManager.getNetworkCapabilities(activeNetwork)
         return networkCapabilities != null &&
                 networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+    }
+
+    fun addToFavourites(favourite: Favourite) {
+        mainViewModel.addFavourite(requireContext(), favourite)
+    }
+
+    fun removeFromFavourites(favourite: Favourite) {
+        mainViewModel.removeFavourite(requireContext(), favourite)
+    }
+
+    fun addToRecent(recent: Recent) {
+        mainViewModel.addRecent(requireContext(), recent)
+    }
+
+    fun getLastFavouritePosition(): Int {
+        mainViewModel.getLastFavouritePosition(requireContext())
+        return mainViewModel.favouritesLastPosition.value ?: 0
+    }
+
+    private fun setRecentVisibility(isVisible: Boolean) {
+        if (isVisible) {
+            binding.searchRecyclerView.visibility = View.GONE
+            binding.recentLabel.visibility = View.VISIBLE
+            binding.recentRecyclerView.visibility = View.VISIBLE
+        } else {
+            binding.searchRecyclerView.visibility = View.VISIBLE
+            binding.recentLabel.visibility = View.GONE
+            binding.recentRecyclerView.visibility = View.GONE
+        }
     }
 }
