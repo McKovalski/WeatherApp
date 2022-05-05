@@ -15,7 +15,6 @@ import com.example.weatherapp.models.Favourite
 import com.example.weatherapp.models.Recent
 import com.example.weatherapp.network.model.LocationData
 import com.example.weatherapp.network.model.LocationDetails
-import com.google.android.material.snackbar.Snackbar
 import java.util.*
 import kotlin.math.roundToInt
 
@@ -57,15 +56,16 @@ class FavouritesRecyclerAdapter(
         holder.binding.favouriteCard.favouriteIcon.isSelected = true
 
         holder.binding.favouriteCard.favouriteIcon.setOnClickListener {
-            fragment.removeFromFavourites(location)
+            fragment.removeFromFavourites(location.woeid)
             holder.binding.favouriteCard.favouriteIcon.isSelected = false
             favouritesList.removeAt(position)
             notifyItemRemoved(position)
-            Snackbar.make(
+            fragment.showRemovedFavouriteSnackbar(location.title)
+            /*Snackbar.make(
                 holder.itemView,
                 fragment.getString(R.string.removed_from_favourites, location.title),
                 Snackbar.LENGTH_SHORT
-            ).show()
+            ).show()*/
         }
 
         if (showReorder) {

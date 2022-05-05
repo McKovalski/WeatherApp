@@ -33,6 +33,10 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        // moramo pri ulasku u aplikaciju pozvati ovu funkciju
+        // inace ce biti 0 pri prvom pozivu kasnije
+        mainViewModel.getLastFavouritePosition(this)
+
         binding.bottomNavigationView.setOnNavigationItemSelectedListener {
             when (it.itemId) {
                 R.id.search -> setCurrentFragment(SearchFragment())

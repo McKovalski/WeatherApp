@@ -131,9 +131,9 @@ class MainViewModel : ViewModel() {
         }
     }
 
-    fun removeFavourite(context: Context, favourite: Favourite) {
+    fun removeFavourite(context: Context, woeid: Int) {
         viewModelScope.launch {
-            WeatherAppDatabase.getDatabase(context)?.weatherAppDao()?.deleteFavourite(favourite)
+            WeatherAppDatabase.getDatabase(context)?.weatherAppDao()?.deleteFavouriteById(woeid)
             getFavourites(context)
         }
     }

@@ -94,7 +94,7 @@ class LocationsRecyclerAdapter(
                         favourite = it
                     }
                 }
-                fragment.removeFromFavourites(favourite!!)
+                fragment.removeFromFavourites(location.woeid)
                 favorites.remove(favourite)
             }
             notifyDataSetChanged()

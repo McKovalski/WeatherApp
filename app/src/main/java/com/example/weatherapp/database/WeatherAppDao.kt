@@ -1,6 +1,9 @@
 package com.example.weatherapp.database
 
-import androidx.room.*
+import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
 import com.example.weatherapp.models.CurrentLocation
 import com.example.weatherapp.models.Favourite
 import com.example.weatherapp.models.Recent
@@ -31,8 +34,8 @@ interface WeatherAppDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAllFavourites(favourites: List<Favourite>)
 
-    @Delete
-    suspend fun deleteFavourite(favourite: Favourite)
+    @Query("DELETE FROM Favourite WHERE woeid = :woeid")
+    suspend fun deleteFavouriteById(woeid: Int)
 
     @Query("DELETE FROM Favourite")
     suspend fun deleteAllFavourites()

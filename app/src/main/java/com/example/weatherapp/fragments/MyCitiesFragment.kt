@@ -21,6 +21,7 @@ import com.example.weatherapp.models.Favourite
 import com.example.weatherapp.models.Recent
 import com.example.weatherapp.network.model.LocationDetails
 import com.example.weatherapp.viewmodels.MainViewModel
+import com.google.android.material.snackbar.Snackbar
 import kotlin.system.exitProcess
 
 class MyCitiesFragment : Fragment() {
@@ -120,8 +121,8 @@ class MyCitiesFragment : Fragment() {
                 networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
     }
 
-    fun removeFromFavourites(favourite: Favourite) {
-        mainViewModel.removeFavourite(requireContext(), favourite)
+    fun removeFromFavourites(woeid: Int) {
+        mainViewModel.removeFavourite(requireContext(), woeid)
     }
 
     private val itemTouchHelperCallback = object : ItemTouchHelper.Callback() {
@@ -170,5 +171,13 @@ class MyCitiesFragment : Fragment() {
 
     fun addToRecent(recent: Recent) {
         mainViewModel.addRecent(requireContext(), recent)
+    }
+
+    fun showRemovedFavouriteSnackbar(title: String) {
+        Snackbar.make(
+            requireView(),
+            getString(R.string.removed_from_favourites, title),
+            Snackbar.LENGTH_SHORT
+        ).show()
     }
 }

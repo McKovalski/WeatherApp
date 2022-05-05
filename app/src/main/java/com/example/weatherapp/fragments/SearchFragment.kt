@@ -145,8 +145,8 @@ class SearchFragment : Fragment() {
         mainViewModel.addFavourite(requireContext(), favourite)
     }
 
-    fun removeFromFavourites(favourite: Favourite) {
-        mainViewModel.removeFavourite(requireContext(), favourite)
+    fun removeFromFavourites(woeid: Int) {
+        mainViewModel.removeFavourite(requireContext(), woeid)
     }
 
     fun addToRecent(recent: Recent) {

@@ -157,10 +157,7 @@ class CityDetailActivity : AppCompatActivity() {
             if (isFavourite) {
                 isFavourite = false
                 binding.iconFavourite.isSelected = false
-                val favourite = mainViewModel.getFavouriteById(this, location.woeid)
-                if (favourite != null) {
-                    mainViewModel.removeFavourite(this, favourite)
-                }
+                mainViewModel.removeFavourite(this, location.woeid)
             } else {
                 isFavourite = true
                 binding.iconFavourite.isSelected = true
