@@ -63,7 +63,7 @@ class FavouritesRecyclerAdapter(
             notifyItemRemoved(position)
             Snackbar.make(
                 holder.itemView,
-                "Removed ${location.title} from Favourites",
+                fragment.getString(R.string.removed_from_favourites, location.title),
                 Snackbar.LENGTH_SHORT
             ).show()
         }
@@ -106,11 +106,11 @@ class FavouritesRecyclerAdapter(
 
     fun swapItems(fromPosition: Int, toPosition: Int) {
         if (fromPosition < toPosition) {
-            for (i in fromPosition..toPosition) {
+            for (i in fromPosition until toPosition) {
                 Collections.swap(favouritesList, i, i + 1)
             }
         } else {
-            for (i in toPosition..fromPosition) {
+            for (i in toPosition until fromPosition) {
                 Collections.swap(favouritesList, i, i + 1)
             }
         }

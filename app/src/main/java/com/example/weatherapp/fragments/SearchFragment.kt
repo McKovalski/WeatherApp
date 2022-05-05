@@ -71,8 +71,8 @@ class SearchFragment : Fragment() {
 
     override fun onResume() {
         if (!isNetworkConnected()) {
-            AlertDialog.Builder(requireContext()).setTitle("No Internet Connection")
-                .setMessage("Please check your internet connection and try again")
+            AlertDialog.Builder(requireContext()).setTitle(getString(R.string.no_internet_connection))
+                .setMessage(getString(R.string.check_internet_connection))
                 .setNegativeButton(android.R.string.ok) { _, _ ->
                     activity?.finish()
                     exitProcess(0)
@@ -121,8 +121,8 @@ class SearchFragment : Fragment() {
                     binding.searchRecyclerView.layoutManager = LinearLayoutManager(requireContext())
                 })
             } else {
-                AlertDialog.Builder(requireContext()).setTitle("Error")
-                    .setMessage("Something went wrong")
+                AlertDialog.Builder(requireContext()).setTitle(getString(R.string.error))
+                    .setMessage(getString(R.string.something_went_wrong))
                     .setPositiveButton(android.R.string.ok) { _, _ -> }
                     .setIcon(R.drawable.ic_warning)
                     .show()

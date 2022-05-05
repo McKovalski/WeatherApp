@@ -146,6 +146,6 @@ class LocationsRecyclerAdapter(
         // for miles
         val r = 6371.0
 
-        return "Distance: ${(c * r).roundToInt()} km"
+        return fragment.getString(R.string.calculate_distance, (c * r).roundToInt())
     }
 }

@@ -43,8 +43,8 @@ class MainActivity : AppCompatActivity() {
         }
 
         if (!isNetworkConnected()) {
-            AlertDialog.Builder(this).setTitle("No Internet Connection")
-                .setMessage("Please check your internet connection and try again")
+            AlertDialog.Builder(this).setTitle(getString(R.string.no_internet_connection))
+                .setMessage(getString(R.string.check_internet_connection))
                 .setNegativeButton(android.R.string.ok) { _, _ ->
                     finish()
                     exitProcess(0)
@@ -88,8 +88,8 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         if (!isNetworkConnected()) {
-            AlertDialog.Builder(this).setTitle("No Internet Connection")
-                .setMessage("Please check your internet connection and try again")
+            AlertDialog.Builder(this).setTitle(getString(R.string.no_internet_connection))
+                .setMessage(getString(R.string.check_internet_connection))
                 .setNegativeButton(android.R.string.ok) { _, _ ->
                     finish()
                     exitProcess(0)

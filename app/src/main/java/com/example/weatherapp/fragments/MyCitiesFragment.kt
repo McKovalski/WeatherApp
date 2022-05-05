@@ -4,7 +4,6 @@ import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -22,7 +21,6 @@ import com.example.weatherapp.models.Favourite
 import com.example.weatherapp.models.Recent
 import com.example.weatherapp.network.model.LocationDetails
 import com.example.weatherapp.viewmodels.MainViewModel
-import java.util.*
 import kotlin.system.exitProcess
 
 class MyCitiesFragment : Fragment() {
@@ -82,8 +80,8 @@ class MyCitiesFragment : Fragment() {
 
     override fun onResume() {
         if (!isNetworkConnected()) {
-            AlertDialog.Builder(requireContext()).setTitle("No Internet Connection")
-                .setMessage("Please check your internet connection and try again")
+            AlertDialog.Builder(requireContext()).setTitle(getString(R.string.no_internet_connection))
+                .setMessage(getString(R.string.check_internet_connection))
                 .setNegativeButton(android.R.string.ok) { _, _ ->
                     activity?.finish()
                     exitProcess(0)
@@ -140,7 +138,7 @@ class MyCitiesFragment : Fragment() {
             viewHolder: RecyclerView.ViewHolder,
             target: RecyclerView.ViewHolder
         ): Boolean {
-            val fromPosition = viewHolder.adapterPosition
+            /*val fromPosition = viewHolder.adapterPosition
             val toPosition = target.adapterPosition
             Log.d("FROM POSITION:", fromPosition.toString())
             Log.d("TO POSITION:", toPosition.toString())
@@ -152,16 +150,16 @@ class MyCitiesFragment : Fragment() {
                 for (i in toPosition until fromPosition) {
                     Collections.swap(favourites, i, i+1)
                 }
-            }
+            }*/
 
-            binding.favoritesRecyclerView.adapter?.notifyItemMoved(
-                viewHolder.adapterPosition,
-                target.adapterPosition
-            )
-            /*(binding.favoritesRecyclerView.adapter as FavouritesRecyclerAdapter).swapItems(
+            /*binding.favoritesRecyclerView.adapter?.notifyItemMoved(
                 viewHolder.adapterPosition,
                 target.adapterPosition
             )*/
+            (binding.favoritesRecyclerView.adapter as FavouritesRecyclerAdapter).swapItems(
+                viewHolder.adapterPosition,
+                target.adapterPosition
+            )
             return true
         }
 
