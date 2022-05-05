@@ -34,7 +34,9 @@ class MyCitiesFragment : Fragment() {
     // onDestroyView.
     private val binding get() = _binding!!
 
+    private var favouritesAdapter: FavouritesRecyclerAdapter? = null
     var favourites = ArrayList<Favourite>()
+    private val details = ArrayList<LocationDetails>()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -42,29 +44,11 @@ class MyCitiesFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         _binding = FragmentMyCitiesBinding.inflate(inflater, container, false)
-
-        var favouritesAdapter: FavouritesRecyclerAdapter? = null
         var isEditing = false
-        val details = ArrayList<LocationDetails>()
 
-        mainViewModel.getFavourites(requireContext())
-        mainViewModel.favoriteLocations.observe(viewLifecycleOwner, Observer { favs ->
-            if (favs.isNotEmpty()) {
-                favourites = mainViewModel.favoriteLocations.value!!
-                mainViewModel.favoriteLocationDetails.observe(viewLifecycleOwner, Observer { dets ->
-                    details.addAll(dets)
-                    favouritesAdapter = FavouritesRecyclerAdapter(
-                        requireContext(),
-                        favourites,
-                        details,
-                        this
-                    )
-                    binding.favoritesRecyclerView.adapter = favouritesAdapter
-                    binding.favoritesRecyclerView.layoutManager =
-                        LinearLayoutManager(requireContext())
-                })
-            }
-        })
+        // postavimo item touch helper
+        val itemTouchHelper = ItemTouchHelper(itemTouchHelperCallback)
+        itemTouchHelper.attachToRecyclerView(binding.favoritesRecyclerView)
 
         binding.iconEdit.setOnClickListener {
             if (favouritesAdapter != null) {
@@ -88,9 +72,6 @@ class MyCitiesFragment : Fragment() {
                     }
                     mainViewModel.addAllFavourites(requireContext(), favouritesDb)
                 }
-                // postavimo item touch helper
-                val itemTouchHelper = ItemTouchHelper(itemTouchHelperCallback)
-                itemTouchHelper.attachToRecyclerView(binding.favoritesRecyclerView)
                 favouritesAdapter!!.apply { showReorder = !showReorder }
                 favouritesAdapter!!.notifyDataSetChanged()
             }
@@ -109,6 +90,26 @@ class MyCitiesFragment : Fragment() {
                 }
                 .setIcon(R.drawable.ic_warning).show()
         }
+
+        mainViewModel.getFavourites(requireContext())
+        mainViewModel.favoriteLocations.observe(viewLifecycleOwner, Observer { favs ->
+            if (favs.isNotEmpty()) {
+                favourites = mainViewModel.favoriteLocations.value!!
+                mainViewModel.favoriteLocationDetails.observe(viewLifecycleOwner, Observer { dets ->
+                    details.addAll(dets)
+                    favouritesAdapter = FavouritesRecyclerAdapter(
+                        requireContext(),
+                        favourites,
+                        details,
+                        this
+                    )
+                    binding.favoritesRecyclerView.adapter = favouritesAdapter
+                    binding.favoritesRecyclerView.layoutManager =
+                        LinearLayoutManager(requireContext())
+                })
+            }
+        })
+
         super.onResume()
     }
 

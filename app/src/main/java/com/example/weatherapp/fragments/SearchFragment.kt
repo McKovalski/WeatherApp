@@ -66,6 +66,23 @@ class SearchFragment : Fragment() {
             }
         })
 
+        return binding.root
+    }
+
+    override fun onResume() {
+        if (!isNetworkConnected()) {
+            AlertDialog.Builder(requireContext()).setTitle("No Internet Connection")
+                .setMessage("Please check your internet connection and try again")
+                .setNegativeButton(android.R.string.ok) { _, _ ->
+                    activity?.finish()
+                    exitProcess(0)
+                }
+                .setIcon(R.drawable.ic_warning).show()
+        }
+        // vracamo query koji je bio prije izlaska iz fragmenta
+        binding.searchBar.setQuery(mainViewModel.queryText, false)
+        binding.searchBar.clearFocus()
+
         var favorites = ArrayList<Favourite>()
         mainViewModel.getFavourites(requireContext())
         mainViewModel.favoriteLocations.observe(viewLifecycleOwner, Observer {
@@ -112,22 +129,6 @@ class SearchFragment : Fragment() {
             }
         })
 
-        return binding.root
-    }
-
-    override fun onResume() {
-        if (!isNetworkConnected()) {
-            AlertDialog.Builder(requireContext()).setTitle("No Internet Connection")
-                .setMessage("Please check your internet connection and try again")
-                .setNegativeButton(android.R.string.ok) { _, _ ->
-                    activity?.finish()
-                    exitProcess(0)
-                }
-                .setIcon(R.drawable.ic_warning).show()
-        }
-        // vracamo query koji je bio prije izlaska iz fragmenta
-        binding.searchBar.setQuery(mainViewModel.queryText, false)
-        binding.searchBar.clearFocus()
         super.onResume()
     }
 
