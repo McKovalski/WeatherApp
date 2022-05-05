@@ -56,10 +56,10 @@
             android:layout_height="24dp"
             android:layout_marginTop="16dp"
             android:layout_marginEnd="16dp"
+            android:src="@drawable/favourite_icon_selector"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:tint="@color/color_secondary"
-            tools:src="@drawable/ic_icons_android_ic_star_0" />
+            app:tint="@color/color_secondary" />
 
         <ImageView
             android:id="@+id/weather_icon"

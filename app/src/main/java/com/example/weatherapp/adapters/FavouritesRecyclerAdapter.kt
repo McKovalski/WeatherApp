@@ -54,12 +54,11 @@ class FavouritesRecyclerAdapter(
         holder.binding.favouriteCard.firstDetail.text = locationDetails.getFormattedTime()
         holder.binding.favouriteCard.secondDetail.text = locationDetails.getGMT()
 
-        holder.binding.favouriteCard.favouriteIcon.setImageResource(R.drawable.ic_icons_android_ic_star_1)
-        holder.binding.favouriteCard.favouriteIcon.tag = "isFavourite"
+        holder.binding.favouriteCard.favouriteIcon.isSelected = true
 
         holder.binding.favouriteCard.favouriteIcon.setOnClickListener {
             fragment.removeFromFavourites(location)
-            holder.binding.favouriteCard.favouriteIcon.tag = "isNotFavourite"
+            holder.binding.favouriteCard.favouriteIcon.isSelected = false
             favouritesList.removeAt(position)
             notifyItemRemoved(position)
             Snackbar.make(

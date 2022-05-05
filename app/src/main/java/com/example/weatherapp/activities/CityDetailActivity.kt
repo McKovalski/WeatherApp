@@ -152,20 +152,18 @@ class CityDetailActivity : AppCompatActivity() {
         )
 
         // favoriti
-        if (isFavourite) {
-            binding.iconFavourite.setImageResource(R.drawable.ic_icons_android_ic_star_1)
-        } else {
-            binding.iconFavourite.setImageResource(R.drawable.ic_icons_android_ic_star_0)
-        }
+        binding.iconFavourite.isSelected = isFavourite
         binding.iconFavourite.setOnClickListener {
             if (isFavourite) {
                 isFavourite = false
-                binding.iconFavourite.setImageResource(R.drawable.ic_icons_android_ic_star_0)
+                binding.iconFavourite.isSelected = false
                 val favourite = mainViewModel.getFavouriteById(this, location.woeid)
-                mainViewModel.removeFavourite(this, favourite!!)
+                if (favourite != null) {
+                    mainViewModel.removeFavourite(this, favourite)
+                }
             } else {
                 isFavourite = true
-                binding.iconFavourite.setImageResource(R.drawable.ic_icons_android_ic_star_1)
+                binding.iconFavourite.isSelected = true
                 mainViewModel.getLastFavouritePosition(this)
                 val newPosition: Int = mainViewModel.favouritesLastPosition.value?.plus(1) ?: 0
                 val favourite = Favourite(

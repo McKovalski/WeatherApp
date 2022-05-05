@@ -63,20 +63,17 @@ class LocationsRecyclerAdapter(
         }
 
         if (location.woeid in favorites.map { favourite -> favourite.woeid }) {
-            holder.binding.favouriteIcon.setImageResource(R.drawable.ic_icons_android_ic_star_1)
-            holder.binding.favouriteIcon.tag = "isFavourite"
+            holder.binding.favouriteIcon.isSelected = true
             isFavourite = true
         } else {
-            holder.binding.favouriteIcon.setImageResource(R.drawable.ic_icons_android_ic_star_0)
-            holder.binding.favouriteIcon.tag = "isNotFavourite"
+            holder.binding.favouriteIcon.isSelected = false
             isFavourite = false
         }
 
         holder.binding.favouriteIcon.setOnClickListener {
-            if (holder.binding.favouriteIcon.tag == "isNotFavourite") {
-                holder.binding.favouriteIcon.tag = "isFavourite"
+            if (!holder.binding.favouriteIcon.isSelected) {
+                holder.binding.favouriteIcon.isSelected = true
                 isFavourite = true
-                holder.binding.favouriteIcon.setImageResource(R.drawable.ic_icons_android_ic_star_1)
                 Log.d("Last Favourite Position", fragment.getLastFavouritePosition().toString())
                 val newPosition: Int = fragment.getLastFavouritePosition() + 1
                 val favourite = Favourite(
@@ -89,9 +86,8 @@ class LocationsRecyclerAdapter(
                 fragment.addToFavourites(favourite)
                 favorites.add(favourite)
             } else {
-                holder.binding.favouriteIcon.tag = "isNotFavourite"
+                holder.binding.favouriteIcon.isSelected = false
                 isFavourite = false
-                holder.binding.favouriteIcon.setImageResource(R.drawable.ic_icons_android_ic_star_0)
                 var favourite: Favourite? = null
                 favorites.forEach {
                     if (it.woeid == location.woeid) {

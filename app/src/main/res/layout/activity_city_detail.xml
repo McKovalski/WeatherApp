@@ -44,7 +44,7 @@
                     android:layout_marginTop="20dp"
                     android:layout_marginEnd="16dp"
                     android:layout_marginBottom="20dp"
-                    android:src="@drawable/ic_star_0"
+                    android:src="@drawable/favourite_icon_selector"
                     app:tint="@color/color_secondary" />
 
             </androidx.appcompat.widget.Toolbar>
