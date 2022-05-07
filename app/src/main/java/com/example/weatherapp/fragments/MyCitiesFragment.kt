@@ -169,10 +169,12 @@ class MyCitiesFragment : Fragment() {
     }
 
     fun showRemovedFavouriteSnackbar(title: String) {
-        Snackbar.make(
+        val snackbar = Snackbar.make(
             requireView(),
             getString(R.string.removed_from_favourites, title),
             Snackbar.LENGTH_SHORT
-        ).show()
+        )
+        snackbar.setAnchorView(R.id.bottomNavigationView)
+        snackbar.show()
     }
 }
