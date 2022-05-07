@@ -11,13 +11,13 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.weatherapp.R
 import com.example.weatherapp.adapters.LocationsRecyclerAdapter
 import com.example.weatherapp.databinding.FragmentSearchBinding
 import com.example.weatherapp.models.Favourite
 import com.example.weatherapp.models.Recent
+import com.example.weatherapp.network.model.LocationDetails
 import com.example.weatherapp.viewmodels.MainViewModel
 import kotlin.system.exitProcess
 
@@ -25,12 +25,32 @@ class SearchFragment : Fragment() {
 
     private val mainViewModel: MainViewModel by activityViewModels()
     private var _binding: FragmentSearchBinding? = null
+
     // This property is only valid between onCreateView and
     // onDestroyView.
     private val binding get() = _binding!!
 
-    private lateinit var searchAdapter: LocationsRecyclerAdapter
-    private lateinit var recentAdapter: LocationsRecyclerAdapter
+    private val searchAdapter by lazy {
+        LocationsRecyclerAdapter(
+            requireContext(),
+            arrayListOf(),
+            arrayListOf(),
+            this,
+            null
+        )
+    }
+    private val recentAdapter by lazy {
+        LocationsRecyclerAdapter(
+            requireContext(),
+            arrayListOf(),
+            arrayListOf(),
+            this,
+            null
+        )
+    }
+
+    var favourites = ArrayList<LocationDetails>()
+    var recents = ArrayList<LocationDetails>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         setHasOptionsMenu(true)
@@ -42,10 +62,14 @@ class SearchFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         _binding = FragmentSearchBinding.inflate(inflater, container, false)
-        binding.searchRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         setRecentVisibility(true)
 
-        binding.searchBar.setOnQueryTextListener(object: SearchView.OnQueryTextListener {
+        binding.searchRecyclerView.adapter = searchAdapter
+        binding.searchRecyclerView.layoutManager = LinearLayoutManager(requireContext())
+        binding.recentRecyclerView.adapter = recentAdapter
+        binding.recentRecyclerView.layoutManager = LinearLayoutManager(requireContext())
+
+        binding.searchBar.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 if (!query.isNullOrEmpty()) {
                     mainViewModel.queryText = query
@@ -71,7 +95,8 @@ class SearchFragment : Fragment() {
 
     override fun onResume() {
         if (!isNetworkConnected()) {
-            AlertDialog.Builder(requireContext()).setTitle(getString(R.string.no_internet_connection))
+            AlertDialog.Builder(requireContext())
+                .setTitle(getString(R.string.no_internet_connection))
                 .setMessage(getString(R.string.check_internet_connection))
                 .setNegativeButton(android.R.string.ok) { _, _ ->
                     activity?.finish()
@@ -83,43 +108,31 @@ class SearchFragment : Fragment() {
         binding.searchBar.setQuery(mainViewModel.queryText, false)
         binding.searchBar.clearFocus()
 
-        var favorites = ArrayList<Favourite>()
         mainViewModel.getFavourites(requireContext())
-        mainViewModel.favoriteLocations.observe(viewLifecycleOwner, Observer {
-            favorites = mainViewModel.favoriteLocations.value!!
-        })
+        mainViewModel.favoriteLocationDetails.observe(viewLifecycleOwner) {
+            favourites.clear()
+            favourites.addAll(it)
+            recentAdapter.updateFavourites(favourites)
+            searchAdapter.updateFavourites(favourites)
+        }
 
         // Postavimo Recent
         mainViewModel.getRecent(requireContext())
-        mainViewModel.recentLocations.observe(viewLifecycleOwner, Observer { recentData ->
-            mainViewModel.recentLocationDetails.observe(viewLifecycleOwner, Observer { recentDetails ->
-                recentAdapter = LocationsRecyclerAdapter(
-                    requireContext(),
-                    recentData,
-                    recentDetails,
-                    favorites,
-                    this
-                )
-                binding.recentRecyclerView.adapter = recentAdapter
-                binding.recentRecyclerView.layoutManager = LinearLayoutManager(requireContext())
-            })
-        })
+        mainViewModel.recentLocationDetails.observe(viewLifecycleOwner) { recentDetails ->
+            recents.clear()
+            recents.addAll(recentDetails)
+            recentAdapter.updateLocations(recents)
+        }
 
-        mainViewModel.searchLocationsList.observe(viewLifecycleOwner, Observer { searchResponse ->
+        mainViewModel.searchLocationsList.observe(viewLifecycleOwner) { searchResponse ->
             if (searchResponse.isSuccessful) {
                 setRecentVisibility(false)
 
-                mainViewModel.searchLocationsDetailsList.observe(viewLifecycleOwner, Observer {
-                    searchAdapter = LocationsRecyclerAdapter(
-                        requireContext(),
-                        searchResponse.body()!!,
-                        it,
-                        favorites,
-                        this
-                    )
-                    binding.searchRecyclerView.adapter = searchAdapter
-                    binding.searchRecyclerView.layoutManager = LinearLayoutManager(requireContext())
-                })
+                mainViewModel.searchLocationsDetailsList.observe(viewLifecycleOwner) {
+                    val searchLocations = ArrayList<LocationDetails>()
+                    searchLocations.addAll(it)
+                    searchAdapter.updateLocations(searchLocations)
+                }
             } else {
                 AlertDialog.Builder(requireContext()).setTitle(getString(R.string.error))
                     .setMessage(getString(R.string.something_went_wrong))
@@ -127,7 +140,7 @@ class SearchFragment : Fragment() {
                     .setIcon(R.drawable.ic_warning)
                     .show()
             }
-        })
+        }
 
         super.onResume()
     }

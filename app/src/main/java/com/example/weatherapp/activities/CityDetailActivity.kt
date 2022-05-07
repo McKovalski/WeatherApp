@@ -4,16 +4,13 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.MenuItem
 import androidx.activity.viewModels
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.weatherapp.R
 import com.example.weatherapp.adapters.WeatherRecyclerAdapter
 import com.example.weatherapp.databinding.ActivityCityDetailBinding
 import com.example.weatherapp.helpers.ImageLoader
 import com.example.weatherapp.models.Favourite
-import com.example.weatherapp.network.model.LocationData
 import com.example.weatherapp.network.model.LocationDetails
 import com.example.weatherapp.viewmodels.MainViewModel
 import kotlin.math.roundToInt
@@ -27,7 +24,7 @@ class CityDetailActivity : AppCompatActivity() {
     private lateinit var binding: ActivityCityDetailBinding
 
     private var isFavourite: Boolean = false
-    private lateinit var location: LocationData
+    private lateinit var location: LocationDetails
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,47 +35,35 @@ class CityDetailActivity : AppCompatActivity() {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setHomeAsUpIndicator(R.drawable.ic_icons_android_ic_arrow_back)
 
-        location = intent.extras?.getSerializable(EXTRA_LOCATION) as LocationData
+        location = intent.extras?.getSerializable(EXTRA_LOCATION) as LocationDetails
         isFavourite = intent.extras?.getBoolean(EXTRA_IS_FAVOURITE) as Boolean
-        mainViewModel.getLocationDetails(location.woeid)
-        mainViewModel.locationDetails.observe(this, Observer { it ->
-            if (it.isSuccessful) {
-                val locationDetails = it.body()!!
 
-                setViews(locationDetails)
+        setViews(location)
 
-                // buduca prognoza
-                var weatherRecyclerAdapter =
-                    WeatherRecyclerAdapter(this, locationDetails.consolidated_weather, false)
-                binding.contentScrolling.nextDaysWeatherSequence.recyclerView.adapter =
-                    weatherRecyclerAdapter
-                binding.contentScrolling.nextDaysWeatherSequence.recyclerView.layoutManager =
-                    LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
-                binding.contentScrolling.nextDaysWeatherSequence.today.text = getString(R.string.next_days)
+        // buduca prognoza
+        var weatherRecyclerAdapter =
+            WeatherRecyclerAdapter(this, location.consolidated_weather, false)
+        binding.contentScrolling.nextDaysWeatherSequence.recyclerView.adapter =
+            weatherRecyclerAdapter
+        binding.contentScrolling.nextDaysWeatherSequence.recyclerView.layoutManager =
+            LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+        binding.contentScrolling.nextDaysWeatherSequence.today.text = getString(R.string.next_days)
 
-                // danasnja prognoza
-                val currentDate =
-                    locationDetails.consolidated_weather[0].applicable_date.replace("-", "/")
-                mainViewModel.getDailyForecast(location.woeid, currentDate)
-                mainViewModel.dailyForecast.observe(this, Observer { res ->
-                    val weatherList = res.body()!!.subList(0, 8)
-                    weatherList.sortBy { it.created }
-                    weatherRecyclerAdapter = WeatherRecyclerAdapter(this, weatherList, true)
-                    binding.contentScrolling.todayWeatherSequence.recyclerView.adapter =
-                        weatherRecyclerAdapter
-                    binding.contentScrolling.todayWeatherSequence.recyclerView.layoutManager =
-                        LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
-                    binding.contentScrolling.todayWeatherSequence.today.text = getString(R.string.today)
-                })
+        // danasnja prognoza
+        val currentDate =
+            location.consolidated_weather[0].applicable_date.replace("-", "/")
 
-            } else {
-                AlertDialog.Builder(this).setTitle("Error")
-                    .setMessage("Something went wrong")
-                    .setPositiveButton(android.R.string.ok) { _, _ -> }
-                    .setIcon(R.drawable.ic_warning)
-                    .show()
-            }
-        })
+        mainViewModel.getDailyForecast(location.woeid, currentDate)
+        mainViewModel.dailyForecast.observe(this) { res ->
+            val weatherList = res.body()!!.subList(0, 8)
+            weatherList.sortBy { it.created }
+            weatherRecyclerAdapter = WeatherRecyclerAdapter(this, weatherList, true)
+            binding.contentScrolling.todayWeatherSequence.recyclerView.adapter =
+                weatherRecyclerAdapter
+            binding.contentScrolling.todayWeatherSequence.recyclerView.layoutManager =
+                LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+            binding.contentScrolling.todayWeatherSequence.today.text = getString(R.string.today)
+        }
     }
 
     // overridamo ovu metodu kako bi se vratili na prosli activity u stanju kojem smo ga ostavili

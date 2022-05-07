@@ -1,18 +1,19 @@
 package com.example.weatherapp.network.model
 
+import java.io.Serializable
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.math.abs
 
 data class LocationDetails(
     val consolidated_weather: ArrayList<Weather>,
     val title: String,
     val location_type: String,
     val time: String, //2022-04-13T20:15:34.936607+01:00
-    val sun_set: String,
-    val sun_rise: String,
     val timezone_name: String,
-    val timezone: String
-) {
+    val latt_long: String,
+    val woeid: Int
+) : Serializable {
     fun getFormattedTimeAndTimezone(): String {
         val dateAndTime = time.split(".")[0] // 2022-04-13T20:15:34
         val t = dateAndTime.split("T")[1] // 20:15:34
@@ -50,6 +51,38 @@ data class LocationDetails(
             "GMT$ending"
         }
     }
+
+    fun getCoordinates(): String {
+        val coordinates = latt_long.split(",")
+        var xInt = coordinates[0].trim().split(".")[0]
+        val xDecimal = coordinates[0].trim().split(".")[1]
+        var yInt = coordinates[1].trim().split(".")[0]
+        val yDecimal = coordinates[1].trim().split(".")[1]
+        val x: String
+        if (xInt.toInt() >= 0) {
+            x = "N"
+        } else {
+            x = "S"
+            xInt = (abs(xInt.toInt())).toString()
+        }
+        val y: String
+        if (yInt.toInt() >= 0) {
+            y = "E"
+        } else {
+            y = "W"
+            yInt = (abs(yInt.toInt())).toString()
+        }
+
+        return "$xInt°${xDecimal.take(2)}$x', $yInt°${yDecimal.take(2)}$y'"
+    }
+
+    fun getLatitude(): Double {
+        return latt_long.split(",")[0].toDouble()
+    }
+
+    fun getLongitude(): Double {
+        return latt_long.split(",")[0].toDouble()
+    }
 }
 
 data class Weather(
@@ -68,7 +101,7 @@ data class Weather(
     val humidity: Int,
     val visibility: Float,
     val predictability: Int,
-) {
+) : Serializable {
     fun getFormattedDate(): String {
         val date = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(applicable_date)
         return SimpleDateFormat("EEE, MMM d", Locale.getDefault()).format(date!!)

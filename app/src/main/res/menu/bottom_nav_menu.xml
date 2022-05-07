@@ -7,7 +7,7 @@
     </item>
     <item
         android:id="@+id/my_cities"
-        android:icon="@drawable/ic_star_0"
+        android:icon="@drawable/favourite_icon_selector"
         android:title="@string/my_cities">
     </item>
 </menu>

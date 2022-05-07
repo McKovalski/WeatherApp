@@ -2,7 +2,6 @@ package com.example.weatherapp.adapters
 
 import android.content.Context
 import android.content.Intent
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -15,7 +14,6 @@ import com.example.weatherapp.helpers.ImageLoader
 import com.example.weatherapp.models.CurrentLocation
 import com.example.weatherapp.models.Favourite
 import com.example.weatherapp.models.Recent
-import com.example.weatherapp.network.model.LocationData
 import com.example.weatherapp.network.model.LocationDetails
 import kotlin.math.*
 
@@ -24,12 +22,23 @@ private const val EXTRA_IS_FAVOURITE: String = "is_favourite"
 
 class LocationsRecyclerAdapter(
     private val context: Context,
-    private val locationList: List<LocationData>,
-    private val detailsList: List<LocationDetails>,
-    private val favorites: ArrayList<Favourite>,
+    private val locationDetailsList: ArrayList<LocationDetails>,
+    private val favorites: ArrayList<LocationDetails>,
     private val fragment: SearchFragment,
     private val currentLocation: CurrentLocation? = null
 ) : RecyclerView.Adapter<LocationsRecyclerAdapter.LocationViewHolder>() {
+
+    fun updateLocations(list: ArrayList<LocationDetails>) {
+        locationDetailsList.clear()
+        locationDetailsList.addAll(list)
+        notifyDataSetChanged()
+    }
+
+    fun updateFavourites(list: ArrayList<LocationDetails>) {
+        favorites.clear()
+        favorites.addAll(list)
+        notifyDataSetChanged()
+    }
 
     class LocationViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val binding = LocationItemViewBinding.bind(view)
@@ -41,13 +50,12 @@ class LocationsRecyclerAdapter(
     }
 
     override fun onBindViewHolder(holder: LocationViewHolder, position: Int) {
-        val location = locationList[position]
-        val locationDetails = detailsList[position]
+        val location = locationDetailsList[position]
         var isFavourite: Boolean
 
         holder.binding.cityName.text = location.title
-        holder.binding.temperature.text = locationDetails.consolidated_weather[0].the_temp.roundToInt().toString()
-        val imageResource = ImageLoader(locationDetails.consolidated_weather[0].weather_state_name).getImageId()
+        holder.binding.temperature.text = location.consolidated_weather[0].the_temp.roundToInt().toString()
+        val imageResource = ImageLoader(location.consolidated_weather[0].weather_state_name).getImageId()
         holder.binding.weatherIcon.setImageResource(imageResource)
 
         holder.binding.firstDetail.text = location.getCoordinates()
@@ -74,7 +82,6 @@ class LocationsRecyclerAdapter(
             if (!holder.binding.favouriteIcon.isSelected) {
                 holder.binding.favouriteIcon.isSelected = true
                 isFavourite = true
-                Log.d("Last Favourite Position", fragment.getLastFavouritePosition().toString())
                 val newPosition: Int = fragment.getLastFavouritePosition() + 1
                 val favourite = Favourite(
                     location.woeid,
@@ -84,18 +91,12 @@ class LocationsRecyclerAdapter(
                     newPosition
                 )
                 fragment.addToFavourites(favourite)
-                favorites.add(favourite)
+                favorites.add(location)
             } else {
                 holder.binding.favouriteIcon.isSelected = false
                 isFavourite = false
-                var favourite: Favourite? = null
-                favorites.forEach {
-                    if (it.woeid == location.woeid) {
-                        favourite = it
-                    }
-                }
                 fragment.removeFromFavourites(location.woeid)
-                favorites.remove(favourite)
+                favorites.remove(location)
             }
             notifyDataSetChanged()
         }
@@ -118,7 +119,7 @@ class LocationsRecyclerAdapter(
     }
 
     override fun getItemCount(): Int {
-        return locationList.size
+        return locationDetailsList.size
     }
 
     private fun calculateDistance(
