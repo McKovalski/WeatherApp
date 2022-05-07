@@ -29,7 +29,6 @@ class MyCitiesFragment : Fragment() {
 
     private val mainViewModel: MainViewModel by activityViewModels()
     private var _binding: FragmentMyCitiesBinding? = null
-
     // This property is only valid between onCreateView and
     // onDestroyView.
     private val binding get() = _binding!!
@@ -82,8 +81,8 @@ class MyCitiesFragment : Fragment() {
                     }
                     mainViewModel.addAllFavourites(requireContext(), favouritesDb)
                 }
-                favouritesAdapter!!.apply { showReorder = !showReorder }
-                favouritesAdapter!!.notifyDataSetChanged()
+                favouritesAdapter.apply { showReorder = !showReorder }
+                favouritesAdapter.notifyDataSetChanged()
             }
         }
 

@@ -15,6 +15,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.WeatherApp">
         <activity
+            android:name=".activities.AboutActivity"
+            android:exported="false" />
+        <activity
             android:name=".activities.CityDetailActivity"
             android:exported="false">
             <meta-data

@@ -25,7 +25,6 @@ class SearchFragment : Fragment() {
 
     private val mainViewModel: MainViewModel by activityViewModels()
     private var _binding: FragmentSearchBinding? = null
-
     // This property is only valid between onCreateView and
     // onDestroyView.
     private val binding get() = _binding!!

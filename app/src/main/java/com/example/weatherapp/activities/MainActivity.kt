@@ -14,6 +14,7 @@ import com.example.weatherapp.R
 import com.example.weatherapp.databinding.ActivityMainBinding
 import com.example.weatherapp.fragments.MyCitiesFragment
 import com.example.weatherapp.fragments.SearchFragment
+import com.example.weatherapp.fragments.SettingsFragment
 import com.example.weatherapp.models.CurrentLocation
 import com.example.weatherapp.viewmodels.MainViewModel
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -41,7 +42,7 @@ class MainActivity : AppCompatActivity() {
             when (it.itemId) {
                 R.id.search -> setCurrentFragment(SearchFragment())
                 R.id.my_cities -> setCurrentFragment(MyCitiesFragment())
-
+                R.id.settings -> setCurrentFragment(SettingsFragment())
             }
             true
         }

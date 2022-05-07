@@ -10,4 +10,9 @@
         android:icon="@drawable/favourite_icon_selector"
         android:title="@string/my_cities">
     </item>
+    <item
+        android:id="@+id/settings"
+        android:icon="@drawable/ic_icons_android_ic_settings"
+        android:title="@string/settings">
+    </item>
 </menu>
