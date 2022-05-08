@@ -4,12 +4,9 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
-import android.location.LocationListener
-import android.location.LocationManager
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -73,7 +70,7 @@ class MainActivity : AppCompatActivity() {
             setCurrentFragment(SearchFragment())
         }
 
-        // pri pokretanju dodajemo trenutnu lokaciju u bazu
+        // provjera dozvola aplikacije
         if (ActivityCompat.checkSelfPermission(
                 this,
                 Manifest.permission.ACCESS_FINE_LOCATION
@@ -89,7 +86,8 @@ class MainActivity : AppCompatActivity() {
             )
         }
 
-        val locationListener = LocationListener { location ->
+        // pri pokretanju dodajemo trenutnu lokaciju u bazu
+        /*val locationListener = LocationListener { location ->
             mainViewModel.setCurrentLocation(this,
                 CurrentLocation(
                     latitude = location.latitude,
@@ -115,7 +113,16 @@ class MainActivity : AppCompatActivity() {
                 MIN_DISTANCE_CHANGE_FOR_UPDATES,
                 locationListener
             )
-        }
+        }*/
+
+        // hardkodirana lokacija Zagreba TODO
+        mainViewModel.setCurrentLocation(
+            this,
+            CurrentLocation(
+                latitude = 45.807259,
+                longitude = 15.967600
+            )
+        )
     }
 
     override fun onResume() {
