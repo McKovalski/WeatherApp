@@ -10,6 +10,7 @@ import com.example.weatherapp.R
 import com.example.weatherapp.adapters.WeatherRecyclerAdapter
 import com.example.weatherapp.databinding.ActivityCityDetailBinding
 import com.example.weatherapp.helpers.ImageLoader
+import com.example.weatherapp.helpers.LanguageHelper
 import com.example.weatherapp.models.Favourite
 import com.example.weatherapp.network.model.LocationDetails
 import com.example.weatherapp.viewmodels.MainViewModel
@@ -25,6 +26,7 @@ class CityDetailActivity : AppCompatActivity() {
 
     private var isFavourite: Boolean = false
     private lateinit var location: LocationDetails
+    val languageCode = LanguageHelper(applicationContext).loadLocale()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -127,7 +129,7 @@ class CityDetailActivity : AppCompatActivity() {
         binding.contentScrolling.masterInfoView.baseCityInfo.time.text =
             locationDetails.getFormattedTimeAndTimezone()
         binding.contentScrolling.masterInfoView.baseCityInfo.forecastInfo.text =
-            locationDetails.consolidated_weather[0].weather_state_name
+            locationDetails.consolidated_weather[0].getLocalizedWeatherState(languageCode)
         binding.contentScrolling.masterInfoView.baseCityInfo.temperature.text =
             locationDetails.consolidated_weather[0].the_temp.roundToInt().toString().plus("°")
         val imageResource =

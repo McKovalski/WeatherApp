@@ -107,24 +107,32 @@ data class Weather(
         return SimpleDateFormat("EEE, MMM d", Locale.getDefault()).format(date!!)
     }
 
-    fun getDayInWeek(): String {
+    fun getDayInWeek(): Int {
         val date = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(applicable_date)
         val calendar = Calendar.getInstance()
         calendar.time = date!!
-        // ovo mozda nece biti dobro zbog lokalizacije TODO
-        val dayInWeek: String = when (calendar.get(Calendar.DAY_OF_WEEK)) {
-            0 -> "MON"
-            1 -> "TUE"
-            2 -> "WED"
-            3 -> "THU"
-            4 -> "FRI"
-            5 -> "SAT"
-            else -> "SUN"
-        }
-        return dayInWeek
+        return calendar.get(Calendar.DAY_OF_WEEK)
     }
 
     fun getTimeCreated(): String {
         return created.subSequence(11,16) as String
+    }
+
+    fun getLocalizedWeatherState(languageCode: String): String {
+        return if (languageCode == "hr") {
+            when (weather_state_name) {
+                "Clear" -> "Vedro"
+                "Light Cloud" -> "Mjestimice oblačno"
+                "Heavy Cloud" -> "Oblačno"
+                "Light Rain" -> "Blaga kiša"
+                "Heavy Rain" -> "Jaka kiša"
+                "Showers" -> "Pljuskovi"
+                "Thunderstorm" -> "Olujno"
+                "Sleet" -> "Susnježica"
+                else -> "Snijeg"
+            }
+        } else {
+            weather_state_name
+        }
     }
 }

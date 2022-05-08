@@ -29,7 +29,19 @@ class WeatherRecyclerAdapter(
     override fun onBindViewHolder(holder: WeatherViewHolder, position: Int) {
         val weather = weatherList[position]
 
-        holder.binding.timeOrDay.text = if (isToday) weather.getTimeCreated() else weather.getDayInWeek()
+        holder.binding.timeOrDay.text = if (isToday) {
+            weather.getTimeCreated()
+        } else {
+            when (weather.getDayInWeek()) {
+                0 -> context.getString(R.string.mon)
+                1 -> context.getString(R.string.tue)
+                2 -> context.getString(R.string.wed)
+                3 -> context.getString(R.string.thu)
+                4 -> context.getString(R.string.fri)
+                5 -> context.getString(R.string.sat)
+                else -> context.getString(R.string.sun)
+            }
+        }
         holder.binding.temperature.text = weather.the_temp.roundToInt().toString().plus("°")
         val imageResource = ImageLoader(weather.weather_state_name).getImageId()
         holder.binding.iconWeather.setImageResource(imageResource)

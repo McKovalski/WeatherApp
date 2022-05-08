@@ -55,6 +55,8 @@ class MainViewModel : ViewModel() {
     // zadnja pozicija favorita
     val favouritesLastPosition = MutableLiveData<Int>()
 
+    private val currentLanguage = MutableLiveData<String>()
+
 
     fun getLocationList(query: String) {
         viewModelScope.launch {
@@ -101,6 +103,13 @@ class MainViewModel : ViewModel() {
         }
     }
 
+    fun deleteAllRecent(context: Context) {
+        viewModelScope.launch {
+            WeatherAppDatabase.getDatabase(context)?.weatherAppDao()?.deleteAlLRecent()
+            getRecent(context)
+        }
+    }
+
     fun getFavourites(context: Context) {
         viewModelScope.launch {
             val favorites =
@@ -125,6 +134,13 @@ class MainViewModel : ViewModel() {
         viewModelScope.launch {
             WeatherAppDatabase.getDatabase(context)?.weatherAppDao()
                 ?.insertAllFavourites(favourites)
+            getFavourites(context)
+        }
+    }
+
+    fun deleteAllFavourites(context: Context) {
+        viewModelScope.launch {
+            WeatherAppDatabase.getDatabase(context)?.weatherAppDao()?.deleteAllFavourites()
             getFavourites(context)
         }
     }

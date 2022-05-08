@@ -1,17 +1,17 @@
 <resources>
     <string name="app_name">Weather App</string>
-    <string name="title_activity_main">MainActivity</string>
+    <string name="title_activity_main" translatable="false">MainActivity</string>
     <string name="search">Search</string>
     <string name="my_cities">My Cities</string>
     <string name="retry">Retry</string>
     <string name="search_cities">Search Cities</string>
     <string name="today">Today</string>
-    <string name="temperature">TEMPERATURE</string>
-    <string name="wind">WIND</string>
-    <string name="humidity">HUMIDITY</string>
-    <string name="pressure">PRESSURE</string>
-    <string name="visibility">VISIBILITY</string>
-    <string name="accuracy">ACCURACY</string>
+    <string name="temperature">temperature</string>
+    <string name="wind">wind</string>
+    <string name="humidity">humidity</string>
+    <string name="pressure">pressure</string>
+    <string name="visibility">visibility</string>
+    <string name="accuracy">accuracy</string>
     <string name="next_days">Next Days</string>
     <string name="recent">Recent</string>
     <string name="calculate_distance">Distance: %1$d km</string>
@@ -35,7 +35,24 @@
     <string name="class_2022">Class 2022</string>
     <string name="app_name_label">App Name</string>
     <string name="api_credit_label">Api Credit</string>
-    <string name="metaweather">Metaweather</string>
-    <string name="nino_kovacic">Nino Kovačić</string>
+    <string name="metaweather" translatable="false">Metaweather</string>
+    <string name="nino_kovacic" translatable="false">Nino Kovačić</string>
     <string name="developer">Developer</string>
+    <string name="english">English</string>
+    <string name="english_code" translatable="false">en</string>
+    <string name="croatian">Croatian</string>
+    <string name="croatian_code" translatable="false">hr</string>
+    <string name="clear_recent_search_list_question">Clear recent search list?</string>
+    <string name="clear_recent_search_list_body">If you clear your recent search list, your home screen will be empty.</string>
+    <string name="clear">Clear</string>
+    <string name="cancel">Cancel</string>
+    <string name="clear_my_cities_list_question">Clear my cities list?</string>
+    <string name="clear_my_cities_list_body">If you clear your my cities list, your my cities screen will be empty.</string>
+    <string name="mon">mon</string>
+    <string name="tue">tue</string>
+    <string name="wed">wed</string>
+    <string name="thu">thu</string>
+    <string name="fri">fri</string>
+    <string name="sat">sat</string>
+    <string name="sun">sun</string>
 </resources>

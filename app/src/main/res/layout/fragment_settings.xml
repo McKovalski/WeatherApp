@@ -38,6 +38,7 @@
             android:id="@+id/choose_language_autocomplete"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:inputType="none"
             tools:text="English" />
 
     </com.google.android.material.textfield.TextInputLayout>
@@ -62,6 +63,7 @@
             android:id="@+id/choose_city_autocomplete"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:inputType="none"
             tools:text="Zagreb" />
 
     </com.google.android.material.textfield.TextInputLayout>
