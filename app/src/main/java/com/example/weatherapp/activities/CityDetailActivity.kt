@@ -11,6 +11,7 @@ import com.example.weatherapp.adapters.WeatherRecyclerAdapter
 import com.example.weatherapp.databinding.ActivityCityDetailBinding
 import com.example.weatherapp.helpers.ImageLoader
 import com.example.weatherapp.helpers.LanguageHelper
+import com.example.weatherapp.helpers.MeasurementUnitsHelper
 import com.example.weatherapp.models.Favourite
 import com.example.weatherapp.network.model.LocationDetails
 import com.example.weatherapp.viewmodels.MainViewModel
@@ -26,10 +27,14 @@ class CityDetailActivity : AppCompatActivity() {
 
     private var isFavourite: Boolean = false
     private lateinit var location: LocationDetails
-    val languageCode = LanguageHelper(applicationContext).loadLocale()
+    private lateinit var languageCode: String
+    private lateinit var measurementUnits: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        languageCode = LanguageHelper(this).loadLocale()
+        measurementUnits = MeasurementUnitsHelper(this).getUnits()
 
         binding = ActivityCityDetailBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -106,17 +111,14 @@ class CityDetailActivity : AppCompatActivity() {
         val minTemp = locationDetails.consolidated_weather[0].min_temp.roundToInt().toString()
         val maxTemp = locationDetails.consolidated_weather[0].max_temp.roundToInt().toString()
         binding.contentScrolling.masterInfoView.temperatureTile.value.text = "$minTemp° / $maxTemp°"
-        val windSpeed = locationDetails.consolidated_weather[0].wind_speed.roundToInt().toString()
-        val windDirection = locationDetails.consolidated_weather[0].wind_direction_compass
-        binding.contentScrolling.masterInfoView.windTile.value.text =
-            "$windSpeed km/h ($windDirection)"
+        val windSpeed = locationDetails.consolidated_weather[0].getWindSpeed(measurementUnits)
+        binding.contentScrolling.masterInfoView.windTile.value.text = windSpeed
         val humidity = locationDetails.consolidated_weather[0].humidity.toString()
         binding.contentScrolling.masterInfoView.humidityTile.value.text = "$humidity%"
         val pressure = locationDetails.consolidated_weather[0].air_pressure.roundToInt().toString()
         binding.contentScrolling.masterInfoView.pressureTile.value.text = "$pressure hPa"
-        val visibility =
-            (locationDetails.consolidated_weather[0].visibility * 1.61).roundToInt().toString()
-        binding.contentScrolling.masterInfoView.visibilityTile.value.text = "$visibility km"
+        val visibility = locationDetails.consolidated_weather[0].getVisibility(measurementUnits)
+        binding.contentScrolling.masterInfoView.visibilityTile.value.text = visibility
         val accuracy = locationDetails.consolidated_weather[0].predictability.toString()
         binding.contentScrolling.masterInfoView.accuracyTile.value.text = "$accuracy%"
 

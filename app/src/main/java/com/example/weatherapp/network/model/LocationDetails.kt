@@ -1,9 +1,11 @@
 package com.example.weatherapp.network.model
 
+import com.example.weatherapp.helpers.toKm
 import java.io.Serializable
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.math.abs
+import kotlin.math.roundToInt
 
 data class LocationDetails(
     val consolidated_weather: ArrayList<Weather>,
@@ -133,6 +135,22 @@ data class Weather(
             }
         } else {
             weather_state_name
+        }
+    }
+
+    fun getVisibility(measurementUnits: String): String {
+        return if (measurementUnits == "km") {
+            "${visibility.toKm().roundToInt()} km"
+        } else {
+            "${visibility.roundToInt()} mi"
+        }
+    }
+
+    fun getWindSpeed(measurementUnits: String): String {
+        return if (measurementUnits == "km") {
+            "${wind_speed.toKm().roundToInt()} km/h ($wind_direction_compass)"
+        } else {
+            "${wind_speed.roundToInt()} mi/h ($wind_direction_compass)"
         }
     }
 }

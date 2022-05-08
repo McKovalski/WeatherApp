@@ -11,6 +11,8 @@ import com.example.weatherapp.activities.CityDetailActivity
 import com.example.weatherapp.databinding.LocationItemViewBinding
 import com.example.weatherapp.fragments.SearchFragment
 import com.example.weatherapp.helpers.ImageLoader
+import com.example.weatherapp.helpers.MeasurementUnitsHelper
+import com.example.weatherapp.helpers.toMiles
 import com.example.weatherapp.models.CurrentLocation
 import com.example.weatherapp.models.Favourite
 import com.example.weatherapp.models.Recent
@@ -54,20 +56,30 @@ class LocationsRecyclerAdapter(
         var isFavourite: Boolean
 
         holder.binding.cityName.text = location.title
-        holder.binding.temperature.text = location.consolidated_weather[0].the_temp.roundToInt().toString()
-        val imageResource = ImageLoader(location.consolidated_weather[0].weather_state_name).getImageId()
+        holder.binding.temperature.text =
+            location.consolidated_weather[0].the_temp.roundToInt().toString()
+        val imageResource =
+            ImageLoader(location.consolidated_weather[0].weather_state_name).getImageId()
         holder.binding.weatherIcon.setImageResource(imageResource)
 
         holder.binding.firstDetail.text = location.getCoordinates()
         if (currentLocation != null) {
             val startLatitude = location.getLatitude()
             val startLongitude = location.getLongitude()
-            holder.binding.secondDetail.text = calculateDistance(
+            val distance = calculateDistance(
                 startLatitude,
                 startLongitude,
                 currentLocation.latitude,
                 currentLocation.longitude
             )
+            val measurementUnits = MeasurementUnitsHelper(context).getUnits()
+            if (measurementUnits == "km") {
+                holder.binding.secondDetail.text =
+                    fragment.getString(R.string.calculate_distance_km, distance)
+            } else {
+                holder.binding.secondDetail.text =
+                    fragment.getString(R.string.calculate_distance_km, distance.toMiles())
+            }
         }
 
         if (location.woeid in favorites.map { favourite -> favourite.woeid }) {
@@ -103,12 +115,14 @@ class LocationsRecyclerAdapter(
 
         holder.itemView.setOnClickListener {
             // Dodajemo u Recent
-            fragment.addToRecent(Recent(
-                location.woeid,
-                location.title,
-                location.location_type,
-                location.latt_long
-            ))
+            fragment.addToRecent(
+                Recent(
+                    location.woeid,
+                    location.title,
+                    location.location_type,
+                    location.latt_long
+                )
+            )
 
             val intent = Intent(context, CityDetailActivity::class.java).apply {
                 putExtra(EXTRA_LOCATION, location)
@@ -127,7 +141,7 @@ class LocationsRecyclerAdapter(
         startLongitude: Double,
         endLatitude: Double,
         endLongitude: Double
-    ): String {
+    ): Double {
         val lat1 = Math.toRadians(startLatitude)
         val lat2 = Math.toRadians(endLatitude)
         val lon1 = Math.toRadians(startLongitude)
@@ -147,6 +161,6 @@ class LocationsRecyclerAdapter(
         // for miles
         val r = 6371.0
 
-        return fragment.getString(R.string.calculate_distance, (c * r).roundToInt())
+        return (c * r)
     }
 }

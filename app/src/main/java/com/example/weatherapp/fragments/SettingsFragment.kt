@@ -9,6 +9,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
+import android.widget.RadioButton
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.example.weatherapp.R
@@ -17,6 +18,7 @@ import com.example.weatherapp.activities.MainActivity
 import com.example.weatherapp.databinding.ClearAlertDialogViewBinding
 import com.example.weatherapp.databinding.FragmentSettingsBinding
 import com.example.weatherapp.helpers.LanguageHelper
+import com.example.weatherapp.helpers.MeasurementUnitsHelper
 import com.example.weatherapp.viewmodels.MainViewModel
 
 class SettingsFragment : Fragment() {
@@ -62,6 +64,22 @@ class SettingsFragment : Fragment() {
                 val intent = Intent(requireContext(), MainActivity::class.java)
                 activity?.finish()
                 startActivity(intent)
+            }
+        }
+
+        val currentUnits = MeasurementUnitsHelper((requireContext())).getUnits()
+        if (currentUnits == "km") {
+            binding.chooseUnitsCard.radioButtonMetric.isChecked = true
+        } else {
+            binding.chooseUnitsCard.radioButtonImperial.isChecked = true
+        }
+
+        binding.chooseUnitsCard.radioGroup.setOnCheckedChangeListener { radioGroup, checkedId ->
+            val checkedRadioButton: RadioButton = radioGroup.findViewById(checkedId)
+            if (checkedRadioButton.text == getString(R.string.metric)) {
+                MeasurementUnitsHelper(requireContext()).saveUnits("km")
+            } else {
+                MeasurementUnitsHelper(requireContext()).saveUnits("mi")
             }
         }
 

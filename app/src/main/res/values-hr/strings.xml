@@ -14,7 +14,6 @@
     <string name="accuracy">točnost</string>
     <string name="next_days">Sljedeći dani</string>
     <string name="recent">Nedavno</string>
-    <string name="calculate_distance">Udaljenost: %1$d km</string>
     <string name="removed_from_favourites">Izbrisan/a %1$s iz favorita</string>
     <string name="no_internet_connection">Nema internetske veze</string>
     <string name="check_internet_connection">Molimo provjerite internetsku vezu i pokušajte ponovno</string>
@@ -51,4 +50,6 @@
     <string name="fri">pet</string>
     <string name="sat">sub</string>
     <string name="sun">ned</string>
+    <string name="calculate_distance_km">Udaljenost: %1$d km</string>
+    <string name="calculate_distance_miles">Udaljenost: %1$d mi.</string>
 </resources>
