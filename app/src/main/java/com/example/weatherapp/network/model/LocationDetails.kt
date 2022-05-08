@@ -83,7 +83,7 @@ data class LocationDetails(
     }
 
     fun getLongitude(): Double {
-        return latt_long.split(",")[0].toDouble()
+        return latt_long.split(",")[1].toDouble()
     }
 }
 

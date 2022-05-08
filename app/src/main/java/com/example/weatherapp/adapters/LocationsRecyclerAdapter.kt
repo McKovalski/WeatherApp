@@ -2,6 +2,8 @@ package com.example.weatherapp.adapters
 
 import android.content.Context
 import android.content.Intent
+import android.location.Location
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -17,7 +19,7 @@ import com.example.weatherapp.models.CurrentLocation
 import com.example.weatherapp.models.Favourite
 import com.example.weatherapp.models.Recent
 import com.example.weatherapp.network.model.LocationDetails
-import kotlin.math.*
+import kotlin.math.roundToInt
 
 private const val EXTRA_LOCATION: String = "location"
 private const val EXTRA_IS_FAVOURITE: String = "is_favourite"
@@ -27,7 +29,7 @@ class LocationsRecyclerAdapter(
     private val locationDetailsList: ArrayList<LocationDetails>,
     private val favorites: ArrayList<LocationDetails>,
     private val fragment: SearchFragment,
-    private val currentLocation: CurrentLocation? = null
+    private var currentLocation: CurrentLocation? = null
 ) : RecyclerView.Adapter<LocationsRecyclerAdapter.LocationViewHolder>() {
 
     fun updateLocations(list: ArrayList<LocationDetails>) {
@@ -39,6 +41,11 @@ class LocationsRecyclerAdapter(
     fun updateFavourites(list: ArrayList<LocationDetails>) {
         favorites.clear()
         favorites.addAll(list)
+        notifyDataSetChanged()
+    }
+
+    fun updateCurrentLocation(cl: CurrentLocation) {
+        this.currentLocation = cl
         notifyDataSetChanged()
     }
 
@@ -66,19 +73,33 @@ class LocationsRecyclerAdapter(
         if (currentLocation != null) {
             val startLatitude = location.getLatitude()
             val startLongitude = location.getLongitude()
-            val distance = calculateDistance(
+            val results = FloatArray(1)
+            Log.d("Current location latitude", "${currentLocation!!.latitude}")
+            Log.d("Current location latitude", "${currentLocation!!.longitude}")
+            Location.distanceBetween(
                 startLatitude,
                 startLongitude,
-                currentLocation.latitude,
-                currentLocation.longitude
+                currentLocation!!.latitude,
+                currentLocation!!.longitude,
+                results
             )
+            // distance je u metrima, moramo pretvoriti u kilometre
+            val distance = results[0] / 1000
             val measurementUnits = MeasurementUnitsHelper(context).getUnits()
             if (measurementUnits == "km") {
                 holder.binding.secondDetail.text =
-                    fragment.getString(R.string.calculate_distance_km, distance)
+                    fragment.getString(
+                        R.string.calculate_distance_km,
+                        distance.roundToInt(),
+                        measurementUnits
+                    )
             } else {
                 holder.binding.secondDetail.text =
-                    fragment.getString(R.string.calculate_distance_km, distance.toMiles())
+                    fragment.getString(
+                        R.string.calculate_distance_km,
+                        distance.toMiles().roundToInt(),
+                        measurementUnits
+                    )
             }
         }
 
@@ -134,33 +155,5 @@ class LocationsRecyclerAdapter(
 
     override fun getItemCount(): Int {
         return locationDetailsList.size
-    }
-
-    private fun calculateDistance(
-        startLatitude: Double,
-        startLongitude: Double,
-        endLatitude: Double,
-        endLongitude: Double
-    ): Double {
-        val lat1 = Math.toRadians(startLatitude)
-        val lat2 = Math.toRadians(endLatitude)
-        val lon1 = Math.toRadians(startLongitude)
-        val lon2 = Math.toRadians(endLongitude)
-
-        // Haversine formula
-        val dlat: Double = lat2 - lat1
-        val dlon: Double = lon2 - lon1
-
-        val a: Double = (sin(dlat / 2).pow(2.0)
-                + (cos(lat1) * cos(lat2)
-                * sin(dlon / 2).pow(2.0)))
-
-        val c: Double = 2 * asin(sqrt(a))
-
-        // Radius of earth in kilometers. Use 3956
-        // for miles
-        val r = 6371.0
-
-        return (c * r)
     }
 }

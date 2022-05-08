@@ -141,6 +141,12 @@ class SearchFragment : Fragment() {
             }
         }
 
+        mainViewModel.currentLocation.observe(viewLifecycleOwner) {
+            val currentLocation = it
+            recentAdapter.updateCurrentLocation(currentLocation)
+            searchAdapter.updateCurrentLocation(currentLocation)
+        }
+
         super.onResume()
     }
 
