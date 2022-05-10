@@ -1,8 +1,5 @@
 package com.example.weatherapp.fragments
 
-import android.content.Context
-import android.net.ConnectivityManager
-import android.net.NetworkCapabilities
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -17,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.weatherapp.R
 import com.example.weatherapp.adapters.FavouritesRecyclerAdapter
 import com.example.weatherapp.databinding.FragmentMyCitiesBinding
+import com.example.weatherapp.helpers.NetworkHelper
 import com.example.weatherapp.models.Favourite
 import com.example.weatherapp.models.Recent
 import com.example.weatherapp.network.model.LocationDetails
@@ -90,7 +88,7 @@ class MyCitiesFragment : Fragment() {
     }
 
     override fun onResume() {
-        if (!isNetworkConnected()) {
+        if (!NetworkHelper().isNetworkConnected(activity)) {
             AlertDialog.Builder(requireContext())
                 .setTitle(getString(R.string.no_internet_connection))
                 .setMessage(getString(R.string.check_internet_connection))
@@ -109,15 +107,6 @@ class MyCitiesFragment : Fragment() {
         }
 
         super.onResume()
-    }
-
-    private fun isNetworkConnected(): Boolean {
-        val connectivityManager =
-            activity?.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val activeNetwork = connectivityManager.activeNetwork
-        val networkCapabilities = connectivityManager.getNetworkCapabilities(activeNetwork)
-        return networkCapabilities != null &&
-                networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
     }
 
     fun removeFromFavourites(woeid: Int) {

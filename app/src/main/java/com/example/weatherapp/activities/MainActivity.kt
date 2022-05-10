@@ -2,10 +2,7 @@ package com.example.weatherapp.activities
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.content.Context
 import android.content.pm.PackageManager
-import android.net.ConnectivityManager
-import android.net.NetworkCapabilities
 import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
@@ -18,6 +15,7 @@ import com.example.weatherapp.fragments.MyCitiesFragment
 import com.example.weatherapp.fragments.SearchFragment
 import com.example.weatherapp.fragments.SettingsFragment
 import com.example.weatherapp.helpers.LanguageHelper
+import com.example.weatherapp.helpers.NetworkHelper
 import com.example.weatherapp.models.CurrentLocation
 import com.example.weatherapp.viewmodels.MainViewModel
 import kotlin.system.exitProcess
@@ -58,7 +56,7 @@ class MainActivity : AppCompatActivity() {
             true
         }
 
-        if (!isNetworkConnected()) {
+        if (!NetworkHelper().isNetworkConnected(this)) {
             AlertDialog.Builder(this).setTitle(getString(R.string.no_internet_connection))
                 .setMessage(getString(R.string.check_internet_connection))
                 .setNegativeButton(android.R.string.ok) { _, _ ->
@@ -126,7 +124,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onResume() {
-        if (!isNetworkConnected()) {
+        if (!NetworkHelper().isNetworkConnected(this)) {
             AlertDialog.Builder(this).setTitle(getString(R.string.no_internet_connection))
                 .setMessage(getString(R.string.check_internet_connection))
                 .setNegativeButton(android.R.string.ok) { _, _ ->
@@ -143,13 +141,4 @@ class MainActivity : AppCompatActivity() {
             replace(R.id.flFragment, fragment)
             commit()
         }
-
-    private fun isNetworkConnected(): Boolean {
-        val connectivityManager =
-            getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val activeNetwork = connectivityManager.activeNetwork
-        val networkCapabilities = connectivityManager.getNetworkCapabilities(activeNetwork)
-        return networkCapabilities != null &&
-                networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
-    }
 }

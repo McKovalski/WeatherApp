@@ -1,8 +1,5 @@
 package com.example.weatherapp.fragments
 
-import android.content.Context
-import android.net.ConnectivityManager
-import android.net.NetworkCapabilities
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -15,6 +12,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.weatherapp.R
 import com.example.weatherapp.adapters.LocationsRecyclerAdapter
 import com.example.weatherapp.databinding.FragmentSearchBinding
+import com.example.weatherapp.helpers.NetworkHelper
 import com.example.weatherapp.models.Favourite
 import com.example.weatherapp.models.Recent
 import com.example.weatherapp.network.model.LocationDetails
@@ -93,7 +91,7 @@ class SearchFragment : Fragment() {
     }
 
     override fun onResume() {
-        if (!isNetworkConnected()) {
+        if (!NetworkHelper().isNetworkConnected(activity)) {
             AlertDialog.Builder(requireContext())
                 .setTitle(getString(R.string.no_internet_connection))
                 .setMessage(getString(R.string.check_internet_connection))
@@ -148,15 +146,6 @@ class SearchFragment : Fragment() {
         }
 
         super.onResume()
-    }
-
-    private fun isNetworkConnected(): Boolean {
-        val connectivityManager =
-            activity?.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val activeNetwork = connectivityManager.activeNetwork
-        val networkCapabilities = connectivityManager.getNetworkCapabilities(activeNetwork)
-        return networkCapabilities != null &&
-                networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
     }
 
     fun addToFavourites(favourite: Favourite) {
