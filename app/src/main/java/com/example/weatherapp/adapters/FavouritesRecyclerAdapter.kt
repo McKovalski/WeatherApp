@@ -12,10 +12,10 @@ import com.example.weatherapp.activities.CityDetailActivity
 import com.example.weatherapp.databinding.FavouriteItemViewBinding
 import com.example.weatherapp.fragments.MyCitiesFragment
 import com.example.weatherapp.helpers.ImageLoader
+import com.example.weatherapp.helpers.MeasurementUnitsHelper
 import com.example.weatherapp.models.Recent
 import com.example.weatherapp.network.model.LocationDetails
 import java.util.*
-import kotlin.math.roundToInt
 
 private const val EXTRA_LOCATION: String = "location"
 private const val EXTRA_IS_FAVOURITE: String = "is_favourite"
@@ -46,10 +46,11 @@ class FavouritesRecyclerAdapter(
 
     override fun onBindViewHolder(holder: FavouriteViewHolder, position: Int) {
         val location = favouritesDetailsList[position]
+        val measurementUnits = MeasurementUnitsHelper(context).getUnits()
 
         holder.binding.favouriteCard.cityName.text = location.title
         holder.binding.favouriteCard.temperature.text =
-            location.consolidated_weather[0].the_temp.roundToInt().toString()
+            location.consolidated_weather[0].getCurrentTemperature(measurementUnits)
         val imageResource =
             ImageLoader(location.consolidated_weather[0].weather_state_name).getImageId()
         holder.binding.favouriteCard.weatherIcon.setImageResource(imageResource)

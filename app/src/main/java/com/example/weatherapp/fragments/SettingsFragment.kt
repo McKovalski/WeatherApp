@@ -21,6 +21,9 @@ import com.example.weatherapp.helpers.LanguageHelper
 import com.example.weatherapp.helpers.MeasurementUnitsHelper
 import com.example.weatherapp.viewmodels.MainViewModel
 
+private const val UNITS_METRIC = "metric"
+private const val UNITS_IMPERIAL = "imperial"
+
 class SettingsFragment : Fragment() {
 
     private val mainViewModel: MainViewModel by activityViewModels()
@@ -68,7 +71,7 @@ class SettingsFragment : Fragment() {
         }
 
         val currentUnits = MeasurementUnitsHelper((requireContext())).getUnits()
-        if (currentUnits == "km") {
+        if (currentUnits == UNITS_METRIC) {
             binding.chooseUnitsCard.radioButtonMetric.isChecked = true
         } else {
             binding.chooseUnitsCard.radioButtonImperial.isChecked = true
@@ -77,9 +80,9 @@ class SettingsFragment : Fragment() {
         binding.chooseUnitsCard.radioGroup.setOnCheckedChangeListener { radioGroup, checkedId ->
             val checkedRadioButton: RadioButton = radioGroup.findViewById(checkedId)
             if (checkedRadioButton.text == getString(R.string.metric)) {
-                MeasurementUnitsHelper(requireContext()).saveUnits("km")
+                MeasurementUnitsHelper(requireContext()).saveUnits(UNITS_METRIC)
             } else {
-                MeasurementUnitsHelper(requireContext()).saveUnits("mi")
+                MeasurementUnitsHelper(requireContext()).saveUnits(UNITS_IMPERIAL)
             }
         }
 

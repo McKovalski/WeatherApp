@@ -23,6 +23,8 @@ import kotlin.math.roundToInt
 
 private const val EXTRA_LOCATION: String = "location"
 private const val EXTRA_IS_FAVOURITE: String = "is_favourite"
+private const val UNITS_METRIC = "metric"
+private const val UNITS_IMPERIAL = "imperial"
 
 class LocationsRecyclerAdapter(
     private val context: Context,
@@ -61,10 +63,11 @@ class LocationsRecyclerAdapter(
     override fun onBindViewHolder(holder: LocationViewHolder, position: Int) {
         val location = locationDetailsList[position]
         var isFavourite: Boolean
+        val measurementUnits = MeasurementUnitsHelper(context).getUnits()
 
         holder.binding.cityName.text = location.title
         holder.binding.temperature.text =
-            location.consolidated_weather[0].the_temp.roundToInt().toString()
+            location.consolidated_weather[0].getCurrentTemperature(measurementUnits)
         val imageResource =
             ImageLoader(location.consolidated_weather[0].weather_state_name).getImageId()
         holder.binding.weatherIcon.setImageResource(imageResource)
@@ -85,20 +88,19 @@ class LocationsRecyclerAdapter(
             )
             // distance je u metrima, moramo pretvoriti u kilometre
             val distance = results[0] / 1000
-            val measurementUnits = MeasurementUnitsHelper(context).getUnits()
-            if (measurementUnits == "km") {
+            if (measurementUnits == UNITS_METRIC) {
                 holder.binding.secondDetail.text =
                     fragment.getString(
                         R.string.calculate_distance_km,
                         distance.roundToInt(),
-                        measurementUnits
+                        "km"
                     )
             } else {
                 holder.binding.secondDetail.text =
                     fragment.getString(
-                        R.string.calculate_distance_km,
+                        R.string.calculate_distance_miles,
                         distance.toMiles().roundToInt(),
-                        measurementUnits
+                        "mi"
                     )
             }
         }

@@ -1,11 +1,15 @@
 package com.example.weatherapp.network.model
 
+import com.example.weatherapp.helpers.toFahrenheit
 import com.example.weatherapp.helpers.toKm
 import java.io.Serializable
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.math.abs
 import kotlin.math.roundToInt
+
+private const val UNITS_METRIC = "metric"
+private const val UNITS_IMPERIAL = "imperial"
 
 data class LocationDetails(
     val consolidated_weather: ArrayList<Weather>,
@@ -48,7 +52,7 @@ data class LocationDetails(
         val ending = time.takeLast(6).split(":")[0] // +01
         val prefix = ending.take(1) // +
         return if (ending.removeRange(0, 1).toInt() < 10) {
-            "GMT$prefix${ending.removeRange(0,2)}"
+            "GMT$prefix${ending.removeRange(0, 2)}"
         } else {
             "GMT$ending"
         }
@@ -117,7 +121,7 @@ data class Weather(
     }
 
     fun getTimeCreated(): String {
-        return created.subSequence(11,16) as String
+        return created.subSequence(11, 16) as String
     }
 
     fun getLocalizedWeatherState(languageCode: String): String {
@@ -139,7 +143,7 @@ data class Weather(
     }
 
     fun getVisibility(measurementUnits: String): String {
-        return if (measurementUnits == "km") {
+        return if (measurementUnits == UNITS_METRIC) {
             "${visibility.toKm().roundToInt()} km"
         } else {
             "${visibility.roundToInt()} mi"
@@ -147,10 +151,26 @@ data class Weather(
     }
 
     fun getWindSpeed(measurementUnits: String): String {
-        return if (measurementUnits == "km") {
+        return if (measurementUnits == UNITS_METRIC) {
             "${wind_speed.toKm().roundToInt()} km/h ($wind_direction_compass)"
         } else {
             "${wind_speed.roundToInt()} mi/h ($wind_direction_compass)"
+        }
+    }
+
+    fun getMinMaxTemperature(measurementUnits: String): String {
+        return if (measurementUnits == UNITS_METRIC) {
+            "${min_temp.roundToInt()}° / ${max_temp.roundToInt()}°"
+        } else {
+            "${min_temp.toFahrenheit().roundToInt()}° / ${max_temp.toFahrenheit().roundToInt()}°"
+        }
+    }
+
+    fun getCurrentTemperature(measurementUnits: String): String {
+        return if (measurementUnits == UNITS_METRIC) {
+            "${the_temp.roundToInt()}°"
+        } else {
+            "${the_temp.toFahrenheit().roundToInt()}°"
         }
     }
 }

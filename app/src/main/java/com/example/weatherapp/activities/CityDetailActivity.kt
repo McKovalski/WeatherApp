@@ -19,6 +19,8 @@ import kotlin.math.roundToInt
 
 private const val EXTRA_LOCATION: String = "location"
 private const val EXTRA_IS_FAVOURITE: String = "is_favourite"
+private const val UNITS_METRIC = "metric"
+private const val UNITS_IMPERIAL = "imperial"
 
 class CityDetailActivity : AppCompatActivity() {
 
@@ -108,9 +110,8 @@ class CityDetailActivity : AppCompatActivity() {
             getString(R.string.accuracy)
 
         // podaci vremenskih sastavnica
-        val minTemp = locationDetails.consolidated_weather[0].min_temp.roundToInt().toString()
-        val maxTemp = locationDetails.consolidated_weather[0].max_temp.roundToInt().toString()
-        binding.contentScrolling.masterInfoView.temperatureTile.value.text = "$minTemp° / $maxTemp°"
+        binding.contentScrolling.masterInfoView.temperatureTile.value.text =
+            locationDetails.consolidated_weather[0].getMinMaxTemperature(measurementUnits)
         val windSpeed = locationDetails.consolidated_weather[0].getWindSpeed(measurementUnits)
         binding.contentScrolling.masterInfoView.windTile.value.text = windSpeed
         val humidity = locationDetails.consolidated_weather[0].humidity.toString()
@@ -133,7 +134,7 @@ class CityDetailActivity : AppCompatActivity() {
         binding.contentScrolling.masterInfoView.baseCityInfo.forecastInfo.text =
             locationDetails.consolidated_weather[0].getLocalizedWeatherState(languageCode)
         binding.contentScrolling.masterInfoView.baseCityInfo.temperature.text =
-            locationDetails.consolidated_weather[0].the_temp.roundToInt().toString().plus("°")
+            locationDetails.consolidated_weather[0].getCurrentTemperature(measurementUnits)
         val imageResource =
             ImageLoader(locationDetails.consolidated_weather[0].weather_state_name).getImageId()
         binding.contentScrolling.masterInfoView.baseCityInfo.forecastIcon.setImageResource(
