@@ -50,7 +50,7 @@ class MainViewModel : ViewModel() {
     val currentLocation = MutableLiveData<CurrentLocation>()
 
     // tekst query-a pri izlasku iz search fragmenta
-    var queryText: String? = null
+    var queryText: String? = ""
 
     // zadnja pozicija favorita
     val favouritesLastPosition = MutableLiveData<Int>()

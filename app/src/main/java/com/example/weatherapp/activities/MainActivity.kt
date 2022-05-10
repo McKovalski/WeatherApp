@@ -3,7 +3,10 @@ package com.example.weatherapp.activities
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.pm.PackageManager
+import android.location.LocationListener
+import android.location.LocationManager
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -85,7 +88,8 @@ class MainActivity : AppCompatActivity() {
         }
 
         // pri pokretanju dodajemo trenutnu lokaciju u bazu
-        /*val locationListener = LocationListener { location ->
+        val locationListener = LocationListener { location ->
+            Log.d("New location", "${location.latitude}, ${location.longitude}")
             mainViewModel.setCurrentLocation(this,
                 CurrentLocation(
                     latitude = location.latitude,
@@ -97,30 +101,39 @@ class MainActivity : AppCompatActivity() {
         val gpsEnabled: Boolean = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
         val networkEnabled: Boolean = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
         Log.d("GPS_enabled", gpsEnabled.toString())
-        if (gpsEnabled) {
-            locationManager.requestLocationUpdates(
-                LocationManager.GPS_PROVIDER,
-                MIN_TIME_BW_UPDATES,
-                MIN_DISTANCE_CHANGE_FOR_UPDATES,
-                locationListener
-            )
-        } else if (networkEnabled) {
+        if (networkEnabled) {
             locationManager.requestLocationUpdates(
                 LocationManager.NETWORK_PROVIDER,
                 MIN_TIME_BW_UPDATES,
                 MIN_DISTANCE_CHANGE_FOR_UPDATES,
                 locationListener
             )
-        }*/
-
-        // hardkodirana lokacija Zagreba TODO
-        mainViewModel.setCurrentLocation(
-            this,
-            CurrentLocation(
-                latitude = 45.807259,
-                longitude = 15.967600
+            val location = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)
+            if (location != null) {
+                mainViewModel.setCurrentLocation(this,
+                    CurrentLocation(
+                        latitude = location.latitude,
+                        longitude = location.longitude
+                    )
+                )
+            }
+        } else if (gpsEnabled) {
+            locationManager.requestLocationUpdates(
+                LocationManager.GPS_PROVIDER,
+                MIN_TIME_BW_UPDATES,
+                MIN_DISTANCE_CHANGE_FOR_UPDATES,
+                locationListener
             )
-        )
+            val location = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)
+            if (location != null) {
+                mainViewModel.setCurrentLocation(this,
+                    CurrentLocation(
+                        latitude = location.latitude,
+                        longitude = location.longitude
+                    )
+                )
+            }
+        }
     }
 
     override fun onResume() {

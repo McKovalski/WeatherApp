@@ -1,9 +1,11 @@
 package com.example.weatherapp.fragments
 
+import android.app.Activity
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.Fragment
@@ -23,6 +25,7 @@ class SearchFragment : Fragment() {
 
     private val mainViewModel: MainViewModel by activityViewModels()
     private var _binding: FragmentSearchBinding? = null
+
     // This property is only valid between onCreateView and
     // onDestroyView.
     private val binding get() = _binding!!
@@ -68,22 +71,25 @@ class SearchFragment : Fragment() {
 
         binding.searchBar.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
+                val imm = requireContext()
+                    .getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
+                imm.hideSoftInputFromWindow(binding.searchBar.applicationWindowToken, 0)
                 if (!query.isNullOrEmpty()) {
                     mainViewModel.queryText = query
                     mainViewModel.getLocationList(query.toString())
                 } else {
-                    mainViewModel.queryText = null
+                    mainViewModel.queryText = ""
                     setRecentVisibility(true)
                 }
                 return true
             }
 
             override fun onQueryTextChange(query: String?): Boolean {
+                mainViewModel.queryText = query
                 if (query.isNullOrEmpty()) {
-                    mainViewModel.queryText = null
                     setRecentVisibility(true)
                 }
-                return false
+                return true
             }
         })
 
@@ -123,12 +129,15 @@ class SearchFragment : Fragment() {
 
         mainViewModel.searchLocationsList.observe(viewLifecycleOwner) { searchResponse ->
             if (searchResponse.isSuccessful) {
-                setRecentVisibility(false)
-
                 mainViewModel.searchLocationsDetailsList.observe(viewLifecycleOwner) {
                     val searchLocations = ArrayList<LocationDetails>()
                     searchLocations.addAll(it)
                     searchAdapter.updateLocations(searchLocations)
+                }
+                if (!mainViewModel.queryText.isNullOrEmpty()) {
+                    setRecentVisibility(false)
+                } else {
+                    setRecentVisibility(true)
                 }
             } else {
                 AlertDialog.Builder(requireContext()).setTitle(getString(R.string.error))

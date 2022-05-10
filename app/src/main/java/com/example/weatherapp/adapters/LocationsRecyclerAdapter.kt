@@ -40,6 +40,11 @@ class LocationsRecyclerAdapter(
         notifyDataSetChanged()
     }
 
+    fun clearLocations() {
+        locationDetailsList.clear()
+        notifyDataSetChanged()
+    }
+
     fun updateFavourites(list: ArrayList<LocationDetails>) {
         favorites.clear()
         favorites.addAll(list)
@@ -77,8 +82,10 @@ class LocationsRecyclerAdapter(
             val startLatitude = location.getLatitude()
             val startLongitude = location.getLongitude()
             val results = FloatArray(1)
-            Log.d("Current location latitude", "${currentLocation!!.latitude}")
-            Log.d("Current location latitude", "${currentLocation!!.longitude}")
+            Log.d(
+                "Current location",
+                "${currentLocation!!.latitude}, ${currentLocation!!.longitude}"
+            )
             Location.distanceBetween(
                 startLatitude,
                 startLongitude,
