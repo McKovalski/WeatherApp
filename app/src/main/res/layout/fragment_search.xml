@@ -24,6 +24,8 @@
             android:layout_height="48dp"
             android:layout_margin="8dp"
             android:background="@drawable/search_background"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
             app:iconifiedByDefault="false"
             app:queryBackground="@null"
             app:queryHint="@string/search_cities" />
@@ -45,7 +47,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="16dp"
         android:text="@string/recent"
         app:layout_constraintBottom_toTopOf="@id/recent_recycler_view"
         app:layout_constraintStart_toStartOf="parent"

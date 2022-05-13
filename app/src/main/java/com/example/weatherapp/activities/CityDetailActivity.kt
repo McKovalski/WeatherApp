@@ -4,22 +4,23 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.MenuItem
 import androidx.activity.viewModels
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.weatherapp.R
 import com.example.weatherapp.adapters.WeatherRecyclerAdapter
 import com.example.weatherapp.databinding.ActivityCityDetailBinding
 import com.example.weatherapp.helpers.ImageLoader
+import com.example.weatherapp.helpers.LanguageHelper
+import com.example.weatherapp.helpers.MeasurementUnitsHelper
 import com.example.weatherapp.models.Favourite
-import com.example.weatherapp.network.model.LocationData
 import com.example.weatherapp.network.model.LocationDetails
 import com.example.weatherapp.viewmodels.MainViewModel
 import kotlin.math.roundToInt
 
 private const val EXTRA_LOCATION: String = "location"
 private const val EXTRA_IS_FAVOURITE: String = "is_favourite"
+private const val UNITS_METRIC = "metric"
+private const val UNITS_IMPERIAL = "imperial"
 
 class CityDetailActivity : AppCompatActivity() {
 
@@ -27,10 +28,15 @@ class CityDetailActivity : AppCompatActivity() {
     private lateinit var binding: ActivityCityDetailBinding
 
     private var isFavourite: Boolean = false
-    private lateinit var location: LocationData
+    private lateinit var location: LocationDetails
+    private lateinit var languageCode: String
+    private lateinit var measurementUnits: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        languageCode = LanguageHelper(this).loadLocale()
+        measurementUnits = MeasurementUnitsHelper(this).getUnits()
 
         binding = ActivityCityDetailBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -38,47 +44,35 @@ class CityDetailActivity : AppCompatActivity() {
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.setHomeAsUpIndicator(R.drawable.ic_icons_android_ic_arrow_back)
 
-        location = intent.extras?.getSerializable(EXTRA_LOCATION) as LocationData
+        location = intent.extras?.getSerializable(EXTRA_LOCATION) as LocationDetails
         isFavourite = intent.extras?.getBoolean(EXTRA_IS_FAVOURITE) as Boolean
-        mainViewModel.getLocationDetails(location.woeid)
-        mainViewModel.locationDetails.observe(this, Observer { it ->
-            if (it.isSuccessful) {
-                val locationDetails = it.body()!!
 
-                setViews(locationDetails)
+        setViews(location)
 
-                // buduca prognoza
-                var weatherRecyclerAdapter =
-                    WeatherRecyclerAdapter(this, locationDetails.consolidated_weather, false)
-                binding.contentScrolling.nextDaysWeatherSequence.recyclerView.adapter =
-                    weatherRecyclerAdapter
-                binding.contentScrolling.nextDaysWeatherSequence.recyclerView.layoutManager =
-                    LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
-                binding.contentScrolling.nextDaysWeatherSequence.today.text = getString(R.string.next_days)
+        // buduca prognoza
+        var weatherRecyclerAdapter =
+            WeatherRecyclerAdapter(this, location.consolidated_weather, false)
+        binding.contentScrolling.nextDaysWeatherSequence.recyclerView.adapter =
+            weatherRecyclerAdapter
+        binding.contentScrolling.nextDaysWeatherSequence.recyclerView.layoutManager =
+            LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+        binding.contentScrolling.nextDaysWeatherSequence.today.text = getString(R.string.next_days)
 
-                // danasnja prognoza
-                val currentDate =
-                    locationDetails.consolidated_weather[0].applicable_date.replace("-", "/")
-                mainViewModel.getDailyForecast(location.woeid, currentDate)
-                mainViewModel.dailyForecast.observe(this, Observer { res ->
-                    val weatherList = res.body()!!.subList(0, 8)
-                    weatherList.sortBy { it.created }
-                    weatherRecyclerAdapter = WeatherRecyclerAdapter(this, weatherList, true)
-                    binding.contentScrolling.todayWeatherSequence.recyclerView.adapter =
-                        weatherRecyclerAdapter
-                    binding.contentScrolling.todayWeatherSequence.recyclerView.layoutManager =
-                        LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
-                    binding.contentScrolling.todayWeatherSequence.today.text = getString(R.string.today)
-                })
+        // danasnja prognoza
+        val currentDate =
+            location.consolidated_weather[0].applicable_date.replace("-", "/")
 
-            } else {
-                AlertDialog.Builder(this).setTitle("Error")
-                    .setMessage("Something went wrong")
-                    .setPositiveButton(android.R.string.ok) { _, _ -> }
-                    .setIcon(R.drawable.ic_warning)
-                    .show()
-            }
-        })
+        mainViewModel.getDailyForecast(location.woeid, currentDate)
+        mainViewModel.dailyForecast.observe(this) { res ->
+            val weatherList = res.body()!!.subList(0, 8)
+            weatherList.sortBy { it.created }
+            weatherRecyclerAdapter = WeatherRecyclerAdapter(this, weatherList, true)
+            binding.contentScrolling.todayWeatherSequence.recyclerView.adapter =
+                weatherRecyclerAdapter
+            binding.contentScrolling.todayWeatherSequence.recyclerView.layoutManager =
+                LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+            binding.contentScrolling.todayWeatherSequence.today.text = getString(R.string.today)
+        }
     }
 
     // overridamo ovu metodu kako bi se vratili na prosli activity u stanju kojem smo ga ostavili
@@ -116,20 +110,16 @@ class CityDetailActivity : AppCompatActivity() {
             getString(R.string.accuracy)
 
         // podaci vremenskih sastavnica
-        val minTemp = locationDetails.consolidated_weather[0].min_temp.roundToInt().toString()
-        val maxTemp = locationDetails.consolidated_weather[0].max_temp.roundToInt().toString()
-        binding.contentScrolling.masterInfoView.temperatureTile.value.text = "$minTemp° / $maxTemp°"
-        val windSpeed = locationDetails.consolidated_weather[0].wind_speed.roundToInt().toString()
-        val windDirection = locationDetails.consolidated_weather[0].wind_direction_compass
-        binding.contentScrolling.masterInfoView.windTile.value.text =
-            "$windSpeed km/h ($windDirection)"
+        binding.contentScrolling.masterInfoView.temperatureTile.value.text =
+            locationDetails.consolidated_weather[0].getMinMaxTemperature(measurementUnits)
+        val windSpeed = locationDetails.consolidated_weather[0].getWindSpeed(measurementUnits)
+        binding.contentScrolling.masterInfoView.windTile.value.text = windSpeed
         val humidity = locationDetails.consolidated_weather[0].humidity.toString()
         binding.contentScrolling.masterInfoView.humidityTile.value.text = "$humidity%"
         val pressure = locationDetails.consolidated_weather[0].air_pressure.roundToInt().toString()
         binding.contentScrolling.masterInfoView.pressureTile.value.text = "$pressure hPa"
-        val visibility =
-            (locationDetails.consolidated_weather[0].visibility * 1.61).roundToInt().toString()
-        binding.contentScrolling.masterInfoView.visibilityTile.value.text = "$visibility km"
+        val visibility = locationDetails.consolidated_weather[0].getVisibility(measurementUnits)
+        binding.contentScrolling.masterInfoView.visibilityTile.value.text = visibility
         val accuracy = locationDetails.consolidated_weather[0].predictability.toString()
         binding.contentScrolling.masterInfoView.accuracyTile.value.text = "$accuracy%"
 
@@ -142,9 +132,9 @@ class CityDetailActivity : AppCompatActivity() {
         binding.contentScrolling.masterInfoView.baseCityInfo.time.text =
             locationDetails.getFormattedTimeAndTimezone()
         binding.contentScrolling.masterInfoView.baseCityInfo.forecastInfo.text =
-            locationDetails.consolidated_weather[0].weather_state_name
+            locationDetails.consolidated_weather[0].getLocalizedWeatherState(languageCode)
         binding.contentScrolling.masterInfoView.baseCityInfo.temperature.text =
-            locationDetails.consolidated_weather[0].the_temp.roundToInt().toString().plus("°")
+            locationDetails.consolidated_weather[0].getCurrentTemperature(measurementUnits)
         val imageResource =
             ImageLoader(locationDetails.consolidated_weather[0].weather_state_name).getImageId()
         binding.contentScrolling.masterInfoView.baseCityInfo.forecastIcon.setImageResource(

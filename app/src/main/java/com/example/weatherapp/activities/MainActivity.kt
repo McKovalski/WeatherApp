@@ -1,34 +1,47 @@
 package com.example.weatherapp.activities
 
+import android.Manifest
 import android.annotation.SuppressLint
-import android.content.Context
-import android.location.Location
-import android.net.ConnectivityManager
-import android.net.NetworkCapabilities
+import android.content.pm.PackageManager
+import android.location.LocationListener
+import android.location.LocationManager
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
 import com.example.weatherapp.R
 import com.example.weatherapp.databinding.ActivityMainBinding
 import com.example.weatherapp.fragments.MyCitiesFragment
 import com.example.weatherapp.fragments.SearchFragment
+import com.example.weatherapp.fragments.SettingsFragment
+import com.example.weatherapp.helpers.LanguageHelper
+import com.example.weatherapp.helpers.NetworkHelper
 import com.example.weatherapp.models.CurrentLocation
 import com.example.weatherapp.viewmodels.MainViewModel
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationServices
 import kotlin.system.exitProcess
 
 class MainActivity : AppCompatActivity() {
 
     private val mainViewModel: MainViewModel by viewModels()
     private lateinit var binding: ActivityMainBinding
-    private lateinit var fusedLocationClient: FusedLocationProviderClient
+
+    private val REQUEST_LOCATION: Int = 1
+
+    // The minimum distance to change Updates in meters
+    private val MIN_DISTANCE_CHANGE_FOR_UPDATES: Float = 0f
+
+    // The minimum time between updates in milliseconds
+    private val MIN_TIME_BW_UPDATES = (1000 * 60 * 1).toLong() // 30 minutes
 
     @SuppressLint("MissingPermission")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // postavimo jezik
+        LanguageHelper(this).loadLocale()
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -41,12 +54,12 @@ class MainActivity : AppCompatActivity() {
             when (it.itemId) {
                 R.id.search -> setCurrentFragment(SearchFragment())
                 R.id.my_cities -> setCurrentFragment(MyCitiesFragment())
-
+                R.id.settings -> setCurrentFragment(SettingsFragment())
             }
             true
         }
 
-        if (!isNetworkConnected()) {
+        if (!NetworkHelper().isNetworkConnected(this)) {
             AlertDialog.Builder(this).setTitle(getString(R.string.no_internet_connection))
                 .setMessage(getString(R.string.check_internet_connection))
                 .setNegativeButton(android.R.string.ok) { _, _ ->
@@ -58,9 +71,8 @@ class MainActivity : AppCompatActivity() {
             setCurrentFragment(SearchFragment())
         }
 
-        // pri pokretanju dodajemo trenutnu lokaciju u bazu
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
-        /*if (ActivityCompat.checkSelfPermission(
+        // provjera dozvola aplikacije
+        if (ActivityCompat.checkSelfPermission(
                 this,
                 Manifest.permission.ACCESS_FINE_LOCATION
             ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
@@ -68,19 +80,53 @@ class MainActivity : AppCompatActivity() {
                 Manifest.permission.ACCESS_COARSE_LOCATION
             ) != PackageManager.PERMISSION_GRANTED
         ) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            return
-        }*/
-        fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION),
+                REQUEST_LOCATION
+            )
+        }
+
+        // pri pokretanju dodajemo trenutnu lokaciju u bazu
+        val locationListener = LocationListener { location ->
+            Log.d("New location", "${location.latitude}, ${location.longitude}")
+            mainViewModel.setCurrentLocation(this,
+                CurrentLocation(
+                    latitude = location.latitude,
+                    longitude = location.longitude
+                )
+            )
+        }
+        val locationManager = getSystemService(LOCATION_SERVICE) as LocationManager
+        val gpsEnabled: Boolean = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
+        val networkEnabled: Boolean = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
+        Log.d("GPS_enabled", gpsEnabled.toString())
+        if (networkEnabled) {
+            locationManager.requestLocationUpdates(
+                LocationManager.NETWORK_PROVIDER,
+                MIN_TIME_BW_UPDATES,
+                MIN_DISTANCE_CHANGE_FOR_UPDATES,
+                locationListener
+            )
+            val location = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)
             if (location != null) {
-                mainViewModel.setCurrentLocation(
-                    this,
+                mainViewModel.setCurrentLocation(this,
+                    CurrentLocation(
+                        latitude = location.latitude,
+                        longitude = location.longitude
+                    )
+                )
+            }
+        } else if (gpsEnabled) {
+            locationManager.requestLocationUpdates(
+                LocationManager.GPS_PROVIDER,
+                MIN_TIME_BW_UPDATES,
+                MIN_DISTANCE_CHANGE_FOR_UPDATES,
+                locationListener
+            )
+            val location = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)
+            if (location != null) {
+                mainViewModel.setCurrentLocation(this,
                     CurrentLocation(
                         latitude = location.latitude,
                         longitude = location.longitude
@@ -91,7 +137,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onResume() {
-        if (!isNetworkConnected()) {
+        if (!NetworkHelper().isNetworkConnected(this)) {
             AlertDialog.Builder(this).setTitle(getString(R.string.no_internet_connection))
                 .setMessage(getString(R.string.check_internet_connection))
                 .setNegativeButton(android.R.string.ok) { _, _ ->
@@ -108,13 +154,4 @@ class MainActivity : AppCompatActivity() {
             replace(R.id.flFragment, fragment)
             commit()
         }
-
-    private fun isNetworkConnected(): Boolean {
-        val connectivityManager =
-            getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val activeNetwork = connectivityManager.activeNetwork
-        val networkCapabilities = connectivityManager.getNetworkCapabilities(activeNetwork)
-        return networkCapabilities != null &&
-                networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
-    }
 }

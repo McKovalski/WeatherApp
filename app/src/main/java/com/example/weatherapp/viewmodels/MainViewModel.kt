@@ -41,31 +41,33 @@ class MainViewModel : ViewModel() {
         get() = _dailyForecast
 
     // lista nedavno pregledanih gradova
-    val recentLocations = MutableLiveData<List<LocationData>>()
     val recentLocationDetails = MutableLiveData<List<LocationDetails>>()
 
     // lista favorita
-    val favoriteLocations = MutableLiveData<ArrayList<Favourite>>()
     val favoriteLocationDetails = MutableLiveData<List<LocationDetails>>()
 
     // trenutna lokacija
     val currentLocation = MutableLiveData<CurrentLocation>()
 
     // tekst query-a pri izlasku iz search fragmenta
-    var queryText: String? = null
+    var queryText: String? = ""
 
     // zadnja pozicija favorita
     val favouritesLastPosition = MutableLiveData<Int>()
+
+    private val currentLanguage = MutableLiveData<String>()
 
 
     fun getLocationList(query: String) {
         viewModelScope.launch {
             val searchResponse = Network().getService().getLocationsByQuery(query)
             val searchDetails = searchResponse.body()?.map { location ->
-                Network().getService().getLocationById(location.woeid).body()!!
-            } //TODO provjera ovog
+                async {
+                    Network().getService().getLocationById(location.woeid).body()!!
+                }
+            }
             _searchLocationsList.value = searchResponse
-            _searchLocationsDetailsList.value = searchDetails!!
+            _searchLocationsDetailsList.value = searchDetails?.awaitAll()!!
         }
     }
 
@@ -90,7 +92,6 @@ class MainViewModel : ViewModel() {
                     Network().getService().getLocationById(r.woeid).body()!!
                 }
             }
-            recentLocations.value = recent!!
             recentLocationDetails.value = recentDetailsResponse?.awaitAll()
         }
     }
@@ -98,6 +99,13 @@ class MainViewModel : ViewModel() {
     fun addRecent(context: Context, recent: Recent) {
         viewModelScope.launch {
             WeatherAppDatabase.getDatabase(context)?.weatherAppDao()?.insertRecent(recent)
+            getRecent(context)
+        }
+    }
+
+    fun deleteAllRecent(context: Context) {
+        viewModelScope.launch {
+            WeatherAppDatabase.getDatabase(context)?.weatherAppDao()?.deleteAlLRecent()
             getRecent(context)
         }
     }
@@ -111,7 +119,6 @@ class MainViewModel : ViewModel() {
                     Network().getService().getLocationById(f.woeid).body()!!
                 }
             }
-            favoriteLocations.value = favorites as ArrayList<Favourite>?
             favoriteLocationDetails.value = favoritesDetailsResponse?.awaitAll()
         }
     }
@@ -131,19 +138,18 @@ class MainViewModel : ViewModel() {
         }
     }
 
+    fun deleteAllFavourites(context: Context) {
+        viewModelScope.launch {
+            WeatherAppDatabase.getDatabase(context)?.weatherAppDao()?.deleteAllFavourites()
+            getFavourites(context)
+        }
+    }
+
     fun removeFavourite(context: Context, woeid: Int) {
         viewModelScope.launch {
             WeatherAppDatabase.getDatabase(context)?.weatherAppDao()?.deleteFavouriteById(woeid)
             getFavourites(context)
         }
-    }
-
-    fun getFavouriteById(context: Context, woeid: Int): Favourite? {
-        var favourite: Favourite? = null
-        viewModelScope.launch {
-           favourite = WeatherAppDatabase.getDatabase(context)?.weatherAppDao()?.getFavouriteById(woeid)
-        }
-        return favourite
     }
 
     fun getLastFavouritePosition(context: Context) {

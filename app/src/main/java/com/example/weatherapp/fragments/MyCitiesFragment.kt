@@ -1,41 +1,44 @@
 package com.example.weatherapp.fragments
 
-import android.content.Context
-import android.net.ConnectivityManager
-import android.net.NetworkCapabilities
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.weatherapp.R
 import com.example.weatherapp.adapters.FavouritesRecyclerAdapter
 import com.example.weatherapp.databinding.FragmentMyCitiesBinding
+import com.example.weatherapp.helpers.NetworkHelper
 import com.example.weatherapp.models.Favourite
 import com.example.weatherapp.models.Recent
 import com.example.weatherapp.network.model.LocationDetails
 import com.example.weatherapp.viewmodels.MainViewModel
 import com.google.android.material.snackbar.Snackbar
+import java.util.*
 import kotlin.system.exitProcess
 
 class MyCitiesFragment : Fragment() {
 
     private val mainViewModel: MainViewModel by activityViewModels()
     private var _binding: FragmentMyCitiesBinding? = null
-
     // This property is only valid between onCreateView and
     // onDestroyView.
     private val binding get() = _binding!!
 
-    private var favouritesAdapter: FavouritesRecyclerAdapter? = null
-    var favourites = ArrayList<Favourite>()
-    private val details = ArrayList<LocationDetails>()
+    private val favouritesAdapter by lazy {
+        FavouritesRecyclerAdapter(
+            requireContext(),
+            arrayListOf(),
+            this
+        )
+    }
+    var favourites = ArrayList<LocationDetails>()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -45,12 +48,15 @@ class MyCitiesFragment : Fragment() {
         _binding = FragmentMyCitiesBinding.inflate(inflater, container, false)
         var isEditing = false
 
+        binding.favoritesRecyclerView.adapter = favouritesAdapter
+        binding.favoritesRecyclerView.layoutManager = LinearLayoutManager(requireContext())
+
         // postavimo item touch helper
         val itemTouchHelper = ItemTouchHelper(itemTouchHelperCallback)
         itemTouchHelper.attachToRecyclerView(binding.favoritesRecyclerView)
 
         binding.iconEdit.setOnClickListener {
-            if (favouritesAdapter != null) {
+            if (favourites.isNotEmpty()) {
                 // ako sad tek krecemo uredjivati
                 if (!isEditing) {
                     isEditing = true
@@ -61,18 +67,20 @@ class MyCitiesFragment : Fragment() {
                     // mijenjamo podatke u bazi
                     val favouritesDb = ArrayList<Favourite>()
                     favourites.forEachIndexed { index, element ->
-                        favouritesDb.add(Favourite(
-                            element.woeid,
-                            element.title,
-                            element.location_type,
-                            element.latt_long,
-                            index + 1
-                        ))
+                        favouritesDb.add(
+                            Favourite(
+                                element.woeid,
+                                element.title,
+                                element.location_type,
+                                element.latt_long,
+                                index + 1
+                            )
+                        )
                     }
                     mainViewModel.addAllFavourites(requireContext(), favouritesDb)
                 }
-                favouritesAdapter!!.apply { showReorder = !showReorder }
-                favouritesAdapter!!.notifyDataSetChanged()
+                favouritesAdapter.apply { showReorder = !showReorder }
+                favouritesAdapter.notifyDataSetChanged()
             }
         }
 
@@ -80,8 +88,9 @@ class MyCitiesFragment : Fragment() {
     }
 
     override fun onResume() {
-        if (!isNetworkConnected()) {
-            AlertDialog.Builder(requireContext()).setTitle(getString(R.string.no_internet_connection))
+        if (!NetworkHelper().isNetworkConnected(activity)) {
+            AlertDialog.Builder(requireContext())
+                .setTitle(getString(R.string.no_internet_connection))
                 .setMessage(getString(R.string.check_internet_connection))
                 .setNegativeButton(android.R.string.ok) { _, _ ->
                     activity?.finish()
@@ -91,34 +100,13 @@ class MyCitiesFragment : Fragment() {
         }
 
         mainViewModel.getFavourites(requireContext())
-        mainViewModel.favoriteLocations.observe(viewLifecycleOwner, Observer { favs ->
-            if (favs.isNotEmpty()) {
-                favourites = mainViewModel.favoriteLocations.value!!
-                mainViewModel.favoriteLocationDetails.observe(viewLifecycleOwner, Observer { dets ->
-                    details.addAll(dets)
-                    favouritesAdapter = FavouritesRecyclerAdapter(
-                        requireContext(),
-                        favourites,
-                        details,
-                        this
-                    )
-                    binding.favoritesRecyclerView.adapter = favouritesAdapter
-                    binding.favoritesRecyclerView.layoutManager =
-                        LinearLayoutManager(requireContext())
-                })
-            }
-        })
+        mainViewModel.favoriteLocationDetails.observe(viewLifecycleOwner){ dets ->
+            favourites.clear()
+            favourites.addAll(dets)
+            favouritesAdapter.updateList(favourites)
+        }
 
         super.onResume()
-    }
-
-    private fun isNetworkConnected(): Boolean {
-        val connectivityManager =
-            activity?.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val activeNetwork = connectivityManager.activeNetwork
-        val networkCapabilities = connectivityManager.getNetworkCapabilities(activeNetwork)
-        return networkCapabilities != null &&
-                networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
     }
 
     fun removeFromFavourites(woeid: Int) {
@@ -139,7 +127,7 @@ class MyCitiesFragment : Fragment() {
             viewHolder: RecyclerView.ViewHolder,
             target: RecyclerView.ViewHolder
         ): Boolean {
-            /*val fromPosition = viewHolder.adapterPosition
+            val fromPosition = viewHolder.adapterPosition
             val toPosition = target.adapterPosition
             Log.d("FROM POSITION:", fromPosition.toString())
             Log.d("TO POSITION:", toPosition.toString())
@@ -151,12 +139,7 @@ class MyCitiesFragment : Fragment() {
                 for (i in toPosition until fromPosition) {
                     Collections.swap(favourites, i, i+1)
                 }
-            }*/
-
-            /*binding.favoritesRecyclerView.adapter?.notifyItemMoved(
-                viewHolder.adapterPosition,
-                target.adapterPosition
-            )*/
+            }
             (binding.favoritesRecyclerView.adapter as FavouritesRecyclerAdapter).swapItems(
                 viewHolder.adapterPosition,
                 target.adapterPosition
@@ -174,10 +157,12 @@ class MyCitiesFragment : Fragment() {
     }
 
     fun showRemovedFavouriteSnackbar(title: String) {
-        Snackbar.make(
+        val snackbar = Snackbar.make(
             requireView(),
             getString(R.string.removed_from_favourites, title),
             Snackbar.LENGTH_SHORT
-        ).show()
+        )
+        snackbar.setAnchorView(R.id.bottomNavigationView)
+        snackbar.show()
     }
 }

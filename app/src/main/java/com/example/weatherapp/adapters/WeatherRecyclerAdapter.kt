@@ -8,8 +8,11 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.weatherapp.R
 import com.example.weatherapp.databinding.DailyTimeItemBinding
 import com.example.weatherapp.helpers.ImageLoader
+import com.example.weatherapp.helpers.MeasurementUnitsHelper
 import com.example.weatherapp.network.model.Weather
-import kotlin.math.roundToInt
+
+private const val UNITS_METRIC = "metric"
+private const val UNITS_IMPERIAL = "imperial"
 
 class WeatherRecyclerAdapter(
     private val context: Context,
@@ -28,9 +31,22 @@ class WeatherRecyclerAdapter(
 
     override fun onBindViewHolder(holder: WeatherViewHolder, position: Int) {
         val weather = weatherList[position]
+        val measurementUnits = MeasurementUnitsHelper(context).getUnits()
 
-        holder.binding.timeOrDay.text = if (isToday) weather.getTimeCreated() else weather.getDayInWeek()
-        holder.binding.temperature.text = weather.the_temp.roundToInt().toString().plus("°")
+        holder.binding.timeOrDay.text = if (isToday) {
+            weather.getTimeCreated()
+        } else {
+            when (weather.getDayInWeek()) {
+                0 -> context.getString(R.string.mon)
+                1 -> context.getString(R.string.tue)
+                2 -> context.getString(R.string.wed)
+                3 -> context.getString(R.string.thu)
+                4 -> context.getString(R.string.fri)
+                5 -> context.getString(R.string.sat)
+                else -> context.getString(R.string.sun)
+            }
+        }
+        holder.binding.temperature.text = weather.getCurrentTemperature(measurementUnits)
         val imageResource = ImageLoader(weather.weather_state_name).getImageId()
         holder.binding.iconWeather.setImageResource(imageResource)
     }
